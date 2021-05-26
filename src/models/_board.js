@@ -19,6 +19,11 @@ class _board {
     this.table[x][y] = null;
     return this;
   }
+
+  move(fromX, fromY, toX, toY) {
+    this.table[toX][toY] = this.table[fromX][fromY];
+    this.table[fromX][fromY] = null;
+  }
 }
 
 export default _board;

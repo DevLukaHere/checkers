@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaChessPawn } from 'react-icons/fa';
 
-const Board = ({ source, togglePawn }) => {
+const Board = ({ source, toggleActive }) => {
   const [visualisation, setVisualisation] = useState(null);
 
   const getElements = () => {
@@ -27,7 +27,7 @@ const Board = ({ source, togglePawn }) => {
       <td
         key={`${rowIndex}_${columnIndex}`}
         className={`field ${field ? `field--${field.player}` : ''} `}
-        onClick={() => togglePawn(rowIndex, columnIndex)}
+        onClick={() => toggleActive(rowIndex, columnIndex)}
       >
         {content}
       </td>

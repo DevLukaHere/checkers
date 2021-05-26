@@ -31,24 +31,30 @@ function App() {
   };
 
   const [board, setBoard] = useState(generateBoard());
-  const [move, setMove] = useState('first');
+  const [moves, setMoves] = useState([]);
 
-  const [activePawn, setActivePawn] = useState(null);
+  const [active, setActive] = useState(null);
 
-  const togglePawn = (x, y) => {
-    setActivePawn(board.getPawn(x, y));
+  const toggleActive = (x, y) => {
+    setActive({ X: x, Y: y });
+  };
+
+  const getMoves = (pown) => {
+    console.log('Wszystkie ruchy: ', pown.getMoves());
+    setMoves(pown.getMoves());
   };
 
   useEffect(() => {
-    if (activePawn) {
-      console.log(activePawn);
+    if (active) {
+      //console.log(active);
+      console.log(board.getPawn(active.X, active.Y));
+      getMoves(board.getPawn(active.X, active.Y));
     }
-  }, [activePawn]);
-
+  }, [active]);
   return (
     <div className="App">
       <main className="main">
-        <Board source={board} togglePawn={togglePawn} />
+        <Board source={board} toggleActive={toggleActive} moves={moves} />
       </main>
     </div>
   );
