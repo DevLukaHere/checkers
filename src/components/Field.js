@@ -1,9 +1,21 @@
 import { useState } from 'react';
+import { FaChessPawn } from 'react-icons/fa';
 
-const Field = () => {
-  const [content, setContent] = useState(null);
+const Field = ({ x, y, type, handleClick }) => {
+  const [isActive, setIsActive] = useState(false);
 
-  return <div className="field"></div>;
+  return (
+    <td
+      key={`${x}_${y}`}
+      className={`field field--${type} ${isActive ? 'field--active' : ''}`}
+      onClick={() => {
+        handleClick(x, y);
+        setIsActive(true);
+      }}
+    >
+      {type ? <FaChessPawn /> : ' '}
+    </td>
+  );
 };
 
 export default Field;

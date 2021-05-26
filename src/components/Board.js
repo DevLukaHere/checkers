@@ -1,50 +1,94 @@
 import { useState, useEffect } from 'react';
-import { FaChessPawn } from 'react-icons/fa';
+import Field from './Field';
 
-const Board = ({ source, toggleActive }) => {
-  const [visualisation, setVisualisation] = useState(null);
+const Board = ({ boardSize }) => {
+  const [board, setBoard] = useState([
+    [2, 0, 2, 0, 2, 0, 2, 0],
+    [0, 2, 0, 2, 0, 2, 0, 2],
+    [2, 0, 2, 0, 2, 0, 2, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+  ]);
+  const [content, setContent] = useState(null);
 
-  const getElements = () => {
-    return source.table.map((row, rowIndex) => (
-      <tr key={rowIndex} className={`row row_${rowIndex}`}>
-        {row.map((field, columnIndex) =>
-          translate(field, rowIndex, columnIndex)
-        )}
-      </tr>
-    ));
+  const [current, setCurrent] = useState(null);
+  const [activeMoves, setActiveMoves] = useState([]);
+
+  const handleClick = (x, y) => {
+    setCurrent({ x, y });
   };
 
-  const translate = (field, rowIndex, columnIndex) => {
-    let content = null;
+  const findMoves = () => {
+    if (current) {
+      const moves = [];
+      const type = board[current.x][current.y];
 
-    if (field) {
-      content = <FaChessPawn />;
-    } else {
-      content = ' ';
+      if (type === 1) {
+        moves.push({
+          fromX: current.x,
+          fromY: current.y,
+          toX: current.x - 1,
+          toY: current.y + 1,
+        });
+        moves.push({
+          fromX: current.x,
+          fromY: current.y,
+          toX: current.x - 1,
+          toY: current.y - 1,
+        });
+      }
+      if (type === 2) {
+      }
+
+      return moves;
     }
 
-    return (
-      <td
-        key={`${rowIndex}_${columnIndex}`}
-        className={`field ${field ? `field--${field.player}` : ''} `}
-        onClick={() => toggleActive(rowIndex, columnIndex)}
-      >
-        {content}
-      </td>
-    );
+    return [];
   };
 
-  useEffect(
-    () => {
-      setVisualisation(getElements(source));
-    },
+  const visualize = () => {
+    let result = board.map((row, rowIndex) => (
+      <tr key={rowIndex} id={`row_${rowIndex}`}>
+        {row.map((item, columnIndex) => (
+          <Field
+            key={`${rowIndex}_${columnIndex}`}
+            x={rowIndex}
+            y={columnIndex}
+            type={item}
+            handleClick={handleClick}
+          />
+        ))}
+      </tr>
+    ));
+
+    return result;
+  };
+
+  useEffect(() => {
+    setContent(visualize());
     // eslint-disable-next-line
-    [source]
-  );
+  }, [board]);
+
+  useEffect(() => {
+    setActiveMoves(findMoves());
+    // eslint-disable-next-line
+  }, [current]);
+
+  useEffect(() => {
+    const newBoard = board;
+    activeMoves?.map((move) => {
+      newBoard[move.toX][move.toY] = newBoard[move.toX][move.toY] + '*';
+    });
+    setBoard(newBoard);
+    console.log(newBoard);
+  }, [activeMoves]);
 
   return (
     <table>
-      <tbody className="container">{visualisation}</tbody>
+      <tbody className="container">{content}</tbody>
     </table>
   );
 };

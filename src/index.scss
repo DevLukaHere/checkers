@@ -50,7 +50,7 @@ table {
   width: 110px;
   height: 110px;
   display: inline-block;
-  font-size: 8rem;
+  font-size: 7rem;
   background: white;
   cursor: pointer;
   text-align: center;
@@ -59,15 +59,15 @@ table {
     vertical-align: middle;
   }
 
-  &:active {
-    background: skyblue;
-  }
-
-  &--first {
+  &--1 {
     color: black;
   }
-  &--second {
+  &--2 {
     color: red;
+  }
+
+  &--active {
+    background: skyblue;
   }
 }
 
