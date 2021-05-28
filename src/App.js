@@ -1,4 +1,5 @@
 import Board from './components/Board';
+import BoardContextProvider from './context/BoardContext';
 
 function App() {
   const options = {
@@ -6,11 +7,13 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <main className="main">
-        <Board {...options} />
-      </main>
-    </div>
+    <BoardContextProvider>
+      <div className="App">
+        <main className="main">
+          <Board {...options} />
+        </main>
+      </div>
+    </BoardContextProvider>
   );
 }
 

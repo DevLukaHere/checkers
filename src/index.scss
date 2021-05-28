@@ -66,13 +66,10 @@ table {
     color: red;
   }
 
-  &--active {
-    background: skyblue;
+  &--3,
+  &--5 {
+    background-color: skyblue;
   }
-}
-
-.active {
-  background: skyblue;
 }
 
 .button {
