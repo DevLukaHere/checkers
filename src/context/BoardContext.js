@@ -77,13 +77,13 @@ const BoardContextProvider = ({ children }) => {
 
     if (moves)
       boardPUT(
-        moves[0].toX,
-        moves[0].toY,
+        moves[0].fromX,
+        moves[0].fromY,
         restore(moves[0].fromX, moves[0].fromY)
       );
 
     moves.map((move) =>
-      boardPUT(move.toX, move.toY, restore(board[move.toX][move.toY]))
+      boardPUT(move.toX, move.toY, restore(move.toX, move.toY))
     );
   };
 
