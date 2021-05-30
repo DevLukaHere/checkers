@@ -59,14 +59,17 @@ table {
     vertical-align: middle;
   }
 
-  &--1 {
+  &--1,
+  &--4 {
     color: black;
   }
-  &--2 {
+  &--2,
+  &--5 {
     color: red;
   }
 
   &--3,
+  &--4,
   &--5 {
     background-color: skyblue;
   }

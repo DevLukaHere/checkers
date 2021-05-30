@@ -5,8 +5,8 @@ export const TYPES = {
   BLACK_PAWN: 1,
   RED_PAWN: 2,
   CHECKED: 3,
-  RED_PAWN_CHECKED: 4,
-  BLACK_PAWN_CHECKED: 5,
+  BLACK_PAWN_CHECKED: 4,
+  RED_PAWN_CHECKED: 5,
 };
 
 export class Move {
@@ -46,7 +46,7 @@ const BoardContextProvider = ({ children }) => {
 
   const findMoves = (x, y) => {
     const type = board[x][y];
-    const newMoves = [];
+    let newMoves = [];
 
     if (type === TYPES.BLACK_PAWN_CHECKED) {
       newMoves.push(new Move(x, y, -1, -1));
@@ -56,6 +56,10 @@ const BoardContextProvider = ({ children }) => {
       newMoves.push(new Move(x, y, -1, 1));
       newMoves.push(new Move(x, y, 1, 1));
     }
+
+    newMoves = newMoves
+      .filter((move) => move.toX >= 0 && move.toX < board[0].length)
+      .filter((move) => move.toY >= 0 && move.toY < board.length);
 
     setMoves(newMoves);
   };
