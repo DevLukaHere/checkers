@@ -7,46 +7,39 @@ import { TYPES } from '../context/BoardContext';
 const Field = ({ x, y }) => {
   const { board, boardPUT, setCurrent } = useContext(BoardContext);
 
-  const [type, setType] = useState(board[x][y]);
+  const [field, setField] = useState(board[x][y]);
 
-  const createClassName = (type) => `field field--${type}`;
+  const getStyles = () => {
+    let className = 'field ';
 
-  const [className, setClassName] = useState(createClassName(board[x][y]));
+    if (field) {
+      className += `field--${field.color} `;
+      if (field.isActive) className += `field--active`;
+    }
+
+    return className;
+  };
+
+  const [className, setClassName] = useState(getStyles());
 
   const handleClick = () => {
-    let checked = null;
-    if (type === TYPES.BLANK) checked = TYPES.CHECKED;
-    if (type === TYPES.BLACK_PAWN) checked = TYPES.BLACK_PAWN_CHECKED;
-    if (type === TYPES.RED_PAWN) checked = TYPES.RED_PAWN_CHECKED;
-
-    boardPUT(x, y, checked);
-    setType(checked);
-
     setCurrent({ x, y });
   };
 
   const generateField = () => {
-    const field = (
+    setContent(
       <td key={`${x}_${y}`} className={className} onClick={handleClick}>
-        {/* {x + '_' + y} */}
-        {type !== TYPES.BLANK && type !== TYPES.CHECKED ? <FaChessPawn /> : ' '}
+        {!field.isEmpty ? <FaChessPawn /> : ' '}
       </td>
     );
-
-    setContent(field);
   };
 
   const [content, setContent] = useState(null);
 
   useEffect(() => {
-    setType(board[x][y]);
-    setClassName(createClassName(board[x][y]));
+    setClassName(getStyles());
     generateField();
   }, [board]);
-
-  useEffect(() => {
-    generateField();
-  }, [type]);
 
   return <>{content}</>;
 };

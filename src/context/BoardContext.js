@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { createFromPattern } from '../helpers/helpers';
 
 export const TYPES = {
   BLANK: 0,
@@ -23,16 +24,18 @@ const isDeveloperMode = true;
 export const BoardContext = createContext();
 
 const BoardContextProvider = ({ children }) => {
-  const [board, setBoard] = useState([
-    [2, 0, 2, 0, 2, 0, 2, 0],
-    [0, 2, 0, 2, 0, 2, 0, 2],
-    [2, 0, 2, 0, 2, 0, 2, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0],
-    [0, 1, 0, 1, 0, 1, 0, 1],
-  ]);
+  const [board, setBoard] = useState(
+    createFromPattern([
+      [2, 0, 2, 0, 2, 0, 2, 0],
+      [0, 2, 0, 2, 0, 2, 0, 2],
+      [2, 0, 2, 0, 2, 0, 2, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 1, 0, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 1, 0],
+      [0, 1, 0, 1, 0, 1, 0, 1],
+    ])
+  );
 
   const boardPUT = (x, y, item) => {
     setBoard((prevBoard) => {

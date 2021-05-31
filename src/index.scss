@@ -47,7 +47,7 @@ table {
 }
 
 .field {
-  width: 110px;
+  min-width: 110px;
   height: 110px;
   display: inline-block;
   font-size: 7rem;
@@ -59,18 +59,15 @@ table {
     vertical-align: middle;
   }
 
-  &--1,
-  &--4 {
+  &--black {
     color: black;
   }
-  &--2,
-  &--5 {
+
+  &--red {
     color: red;
   }
 
-  &--3,
-  &--4,
-  &--5 {
+  &--active {
     background-color: skyblue;
   }
 }
