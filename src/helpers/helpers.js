@@ -8,7 +8,7 @@ export const checkActivity = (x, y, activeMoves) => {
   return false;
 };
 
-class Field {
+export class Field {
   constructor(row, column, isEmpty, isActive, isPromoted, color) {
     this.row = row;
     this.column = column;

@@ -2,10 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import { BoardContext } from '../context/BoardContext';
 import { FaChessPawn } from 'react-icons/fa';
 
-import { TYPES } from '../context/BoardContext';
-
 const Field = ({ x, y }) => {
-  const { board, boardPUT, setCurrent } = useContext(BoardContext);
+  const { board, boardACTIVE, setCurrent } = useContext(BoardContext);
 
   const [field, setField] = useState(board[x][y]);
 
@@ -13,7 +11,7 @@ const Field = ({ x, y }) => {
     let className = 'field ';
 
     if (field) {
-      className += `field--${field.color} `;
+      if (field.color) className += `field--${field.color} `;
       if (field.isActive) className += `field--active`;
     }
 
@@ -37,9 +35,16 @@ const Field = ({ x, y }) => {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
-    setClassName(getStyles());
-    generateField();
+    setField(board[x][y]);
   }, [board]);
+
+  useEffect(() => {
+    setClassName(getStyles());
+  }, [field]);
+
+  useEffect(() => {
+    generateField();
+  }, [className]);
 
   return <>{content}</>;
 };
