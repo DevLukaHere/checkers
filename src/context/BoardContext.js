@@ -1,14 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { createFromPattern, Field } from '../helpers/helpers';
-
-export class Move {
-  constructor(fromX, fromY, shiftX, shiftY) {
-    this.fromX = fromX;
-    this.fromY = fromY;
-    this.toX = fromX + shiftY;
-    this.toY = fromY + shiftX;
-  }
-}
+import { createFromPattern } from '../models/Board';
+import Move from '../models/Move';
+import Field from '../models/Field';
 
 export const TYPES = {
   BLANK: 0,

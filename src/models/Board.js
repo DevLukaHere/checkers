@@ -1,23 +1,5 @@
 import { TYPES } from '../context/BoardContext';
-
-export const checkActivity = (x, y, activeMoves) => {
-  activeMoves.forEach((move) => {
-    if (move.toX === x && move.toY === y) return true;
-  });
-
-  return false;
-};
-
-export class Field {
-  constructor(row, column, isEmpty, isActive, isPromoted, color) {
-    this.row = row;
-    this.column = column;
-    this.isEmpty = isEmpty;
-    this.isActive = isActive;
-    this.isPromoted = isPromoted;
-    this.color = color;
-  }
-}
+import Field from '../models/Field';
 
 const transform = (row, column, type) => {
   switch (type) {
@@ -51,3 +33,16 @@ export const createFromPattern = (pattern) => {
 
   return board;
 };
+
+//BOARD SECTION
+
+export default class Board {
+  constructor(row, column, isEmpty, isActive, isPromoted, color) {
+    this.row = row;
+    this.column = column;
+    this.isEmpty = isEmpty;
+    this.isActive = isActive;
+    this.isPromoted = isPromoted;
+    this.color = color;
+  }
+}
