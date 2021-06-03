@@ -2,10 +2,10 @@ import { useState, useEffect, useContext } from 'react';
 import { BoardContext } from '../context/BoardContext';
 import { FaChessPawn } from 'react-icons/fa';
 
-const Field = ({ x, y }) => {
-  const { board, boardACTIVE, setCurrent } = useContext(BoardContext);
+const Field = ({ row, column }) => {
+  const { board, setCurrent } = useContext(BoardContext);
 
-  const [field, setField] = useState(board[x][y]);
+  const [field, setField] = useState(board.getField(row, column));
 
   const getStyles = () => {
     let className = 'field ';
@@ -21,12 +21,12 @@ const Field = ({ x, y }) => {
   const [className, setClassName] = useState(getStyles());
 
   const handleClick = () => {
-    setCurrent({ x, y });
+    setCurrent({ row, column });
   };
 
   const generateField = () => {
     setContent(
-      <td key={`${x}_${y}`} className={className} onClick={handleClick}>
+      <td key={`${row}_${column}`} className={className} onClick={handleClick}>
         {!field.isEmpty ? <FaChessPawn /> : ' '}
       </td>
     );
@@ -35,7 +35,7 @@ const Field = ({ x, y }) => {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
-    setField(board[x][y]);
+    setField(board.getField(row, column));
   }, [board]);
 
   useEffect(() => {

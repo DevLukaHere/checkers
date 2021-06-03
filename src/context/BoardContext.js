@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { createFromPattern } from '../models/Board';
+import Board from '../models/Board';
 import Move from '../models/Move';
-import Field from '../models/Field';
+
+const isDeveloperMode = true;
 
 export const TYPES = {
   BLANK: 0,
@@ -12,14 +13,11 @@ export const TYPES = {
   RED_PAWN_CHECKED: 5,
 };
 
-const isDeveloperMode = true;
-
 export const BoardContext = createContext();
 
 const BoardContextProvider = ({ children }) => {
-  //BOARD SECTION
   const [board, setBoard] = useState(
-    createFromPattern([
+    new Board([
       [2, 0, 2, 0, 2, 0, 2, 0],
       [0, 2, 0, 2, 0, 2, 0, 2],
       [2, 0, 2, 0, 2, 0, 2, 0],
@@ -31,50 +29,8 @@ const BoardContextProvider = ({ children }) => {
     ])
   );
 
-  const boardGET = (x, y) => board[x][y];
-
-  const boardSET = (x, y, newField) => {
-    setBoard((prevBoard) => {
-      const newBoard = prevBoard.map((arr) => arr.slice());
-      newBoard[x][y] = newField;
-      return [...newBoard];
-    });
-  };
-
-  const boardACTIVE = (x, y) => {
-    let prevField = boardGET(x, y);
-    boardSET(
-      x,
-      y,
-      new Field(
-        x,
-        y,
-        prevField.isEmpty,
-        true,
-        prevField.isPromoted,
-        prevField.color
-      )
-    );
-  };
-
-  const boardUNACTIVE = (x, y) => {
-    let prevField = boardGET(x, y);
-    boardSET(
-      x,
-      y,
-      new Field(
-        x,
-        y,
-        prevField.isEmpty,
-        false,
-        prevField.isPromoted,
-        prevField.color
-      )
-    );
-  };
-
   useEffect(() => {
-    if (isDeveloperMode) console.log('BOARD CHANGE: ', board);
+    if (isDeveloperMode) console.log('BOARD CHANGE: ', board.fields);
   }, [board]);
 
   //CURRENT SECTION
@@ -83,29 +39,29 @@ const BoardContextProvider = ({ children }) => {
     if (current) {
       if (isDeveloperMode) console.log('FINDING MOVES FOR', current);
       if (moves) restoreFields(moves);
-      findMoves(current.x, current.y);
+      findMoves(current.row, current.column);
     }
   }, [current]);
 
   //MOVES SECTION
   const [moves, setMoves] = useState(null);
 
-  const findMoves = (x, y) => {
-    let field = boardGET(x, y);
+  const findMoves = (row, column) => {
+    let field = board.getField(row, column);
     let newMoves = [];
 
     if (field.color === 'black') {
-      newMoves.push(new Move(x, y, -1, -1));
-      newMoves.push(new Move(x, y, 1, -1));
+      newMoves.push(new Move(row, column, -1, -1));
+      newMoves.push(new Move(row, column, 1, -1));
     }
     if (field.color === 'red') {
-      newMoves.push(new Move(x, y, -1, 1));
-      newMoves.push(new Move(x, y, 1, 1));
+      newMoves.push(new Move(row, column, -1, 1));
+      newMoves.push(new Move(row, column, 1, 1));
     }
 
     newMoves = newMoves
-      .filter((move) => move.toX >= 0 && move.toX < board[0].length)
-      .filter((move) => move.toY >= 0 && move.toY < board.length);
+      .filter((move) => move.toX >= 0 && move.toX < board.rows)
+      .filter((move) => move.toY >= 0 && move.toY < board.columns);
 
     setMoves(newMoves);
   };
@@ -113,7 +69,9 @@ const BoardContextProvider = ({ children }) => {
   const restoreFields = () => {
     if (isDeveloperMode) console.log('RESTORING FIELDS', moves);
     board.map((row, rowIndex) =>
-      row.map((field, columnIndex) => boardUNACTIVE(rowIndex, columnIndex))
+      row.map((field, columnIndex) =>
+        board.deactiveField(rowIndex, columnIndex)
+      )
     );
   };
 
@@ -121,7 +79,7 @@ const BoardContextProvider = ({ children }) => {
     if (moves) {
       if (isDeveloperMode) console.log('NEW MOVES', moves);
       console.log(moves);
-      moves.map((move) => boardACTIVE(move.toX, move.toY));
+      moves.map((move) => board.activeField(move.toX, move.toY));
     }
   }, [moves]);
 
@@ -129,7 +87,6 @@ const BoardContextProvider = ({ children }) => {
     <BoardContext.Provider
       value={{
         board,
-        boardACTIVE,
         current,
         setCurrent,
         moves,

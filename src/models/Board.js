@@ -1,6 +1,7 @@
 import { TYPES } from '../context/BoardContext';
 import Field from '../models/Field';
 
+//row, column, isEmpty, isActive, isPromoted, color
 const transform = (row, column, type) => {
   switch (type) {
     case TYPES.BLANK:
@@ -20,7 +21,7 @@ const transform = (row, column, type) => {
   }
 };
 
-export const createFromPattern = (pattern) => {
+const createFromPattern = (pattern) => {
   let board = new Array(pattern.length)
     .fill(null)
     .map(() => Array(pattern[0].length));
@@ -34,15 +35,50 @@ export const createFromPattern = (pattern) => {
   return board;
 };
 
-//BOARD SECTION
-
 export default class Board {
-  constructor(row, column, isEmpty, isActive, isPromoted, color) {
-    this.row = row;
-    this.column = column;
-    this.isEmpty = isEmpty;
-    this.isActive = isActive;
-    this.isPromoted = isPromoted;
-    this.color = color;
+  constructor(pattern) {
+    this.fields = createFromPattern(pattern);
+    this.rows = pattern.length;
+    this.columns = pattern[0].length;
   }
+
+  getField = (row, column) => this.fields[row][column];
+
+  setField = (row, column, newElement) => {
+    const newBoard = this.fields.map((arr) => arr.slice());
+    newBoard[row][column] = newElement;
+    return [...newBoard];
+  };
+
+  activeField = (row, column) => {
+    let prevField = this.getField(row, column);
+    this.setField(
+      row,
+      column,
+      new Field(
+        row,
+        column,
+        prevField.isEmpty,
+        true,
+        prevField.isPromoted,
+        prevField.color
+      )
+    );
+  };
+
+  deactiveField = (row, column) => {
+    let prevField = this.getField(row, column);
+    this.setField(
+      row,
+      column,
+      new Field(
+        row,
+        column,
+        prevField.isEmpty,
+        true,
+        prevField.isPromoted,
+        prevField.color
+      )
+    );
+  };
 }

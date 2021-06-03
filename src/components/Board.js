@@ -8,13 +8,13 @@ const Board = () => {
   const [content, setContent] = useState(null);
 
   const transformBoard = () => {
-    let transformedBoard = board.map((row, rowIndex) => (
+    let transformedBoard = board.fields.map((row, rowIndex) => (
       <tr key={rowIndex}>
         {row.map((type, columnIndex) => (
           <Field
             key={`${rowIndex}_${columnIndex}`}
-            x={rowIndex}
-            y={columnIndex}
+            row={rowIndex}
+            column={columnIndex}
           />
         ))}
       </tr>
