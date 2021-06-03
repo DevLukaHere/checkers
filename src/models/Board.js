@@ -22,63 +22,72 @@ const transform = (row, column, type) => {
 };
 
 const createFromPattern = (pattern) => {
-  let board = new Array(pattern.length)
+  let fields = new Array(pattern.length)
     .fill(null)
     .map(() => Array(pattern[0].length));
 
   for (let row = 0; row < pattern.length; row++) {
     for (let column = 0; column < pattern[0].length; column++) {
-      board[row][column] = transform(row, column, pattern[row][column]);
+      fields[row][column] = transform(row, column, pattern[row][column]);
     }
   }
 
-  return board;
+  return fields;
 };
 
 export default class Board {
-  constructor(pattern) {
-    this.fields = createFromPattern(pattern);
-    this.rows = pattern.length;
-    this.columns = pattern[0].length;
+  constructor(source, fromPattern) {
+    this.fields = fromPattern ? createFromPattern(source) : source;
+    this.rows = source.length;
+    this.columns = source[0].length;
   }
 
   getField = (row, column) => this.fields[row][column];
 
+  copyCurrentFields = () => {
+    let copiedFields = new Array(this.rows)
+      .fill(null)
+      .map(() => Array(this.columns));
+
+    for (let row = 0; row < this.rows; row++) {
+      for (let column = 0; column < this.columns; column++) {
+        let prevField = this.getField(row, column);
+        copiedFields[row][column] = new Field(
+          row,
+          column,
+          prevField.isEmpty,
+          prevField.isActive,
+          prevField.isPromoted,
+          prevField.color
+        );
+      }
+    }
+
+    return copiedFields;
+  };
+
   setField = (row, column, newElement) => {
-    const newBoard = this.fields.map((arr) => arr.slice());
-    newBoard[row][column] = newElement;
-    return [...newBoard];
+    const newFields = this.copyCurrentFields();
+    newFields[row][column] = newElement;
+
+    return new Board(newFields, false);
   };
 
-  activeField = (row, column) => {
-    let prevField = this.getField(row, column);
-    this.setField(
-      row,
-      column,
-      new Field(
-        row,
-        column,
-        prevField.isEmpty,
-        true,
-        prevField.isPromoted,
-        prevField.color
-      )
-    );
+  activeFields = (fields) => {
+    const newFields = this.copyCurrentFields();
+    fields.forEach((field) => {
+      newFields[field.row][field.column].isActive = true;
+    });
+
+    return newFields;
   };
 
-  deactiveField = (row, column) => {
-    let prevField = this.getField(row, column);
-    this.setField(
-      row,
-      column,
-      new Field(
-        row,
-        column,
-        prevField.isEmpty,
-        true,
-        prevField.isPromoted,
-        prevField.color
-      )
-    );
+  deactiveFields = (fields) => {
+    const newFields = this.copyCurrentFields();
+    fields.forEach((field) => {
+      newFields[field.row][field.column].isActive = false;
+    });
+
+    return newFields;
   };
 }

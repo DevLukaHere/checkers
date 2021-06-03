@@ -24,16 +24,6 @@ const Field = ({ row, column }) => {
     setCurrent({ row, column });
   };
 
-  const generateField = () => {
-    setContent(
-      <td key={`${row}_${column}`} className={className} onClick={handleClick}>
-        {!field.isEmpty ? <FaChessPawn /> : ' '}
-      </td>
-    );
-  };
-
-  const [content, setContent] = useState(null);
-
   useEffect(() => {
     setField(board.getField(row, column));
   }, [board]);
@@ -42,11 +32,11 @@ const Field = ({ row, column }) => {
     setClassName(getStyles());
   }, [field]);
 
-  useEffect(() => {
-    generateField();
-  }, [className]);
-
-  return <>{content}</>;
+  return (
+    <td key={`${row}_${column}`} className={className} onClick={handleClick}>
+      {!field.isEmpty ? <FaChessPawn /> : ' '}
+    </td>
+  );
 };
 
 export default Field;
