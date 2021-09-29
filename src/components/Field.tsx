@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { FaChessPawn } from 'react-icons/fa';
 
 export type FieldProps = {

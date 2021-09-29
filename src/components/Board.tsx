@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import Field from './Field';
 
 export type BoardProps = {
@@ -19,7 +19,7 @@ const Board = ({ pattern }: BoardProps) => {
     row: number,
     column: number,
     type: fieldType
-  ) => {
+  ): JSX.Element | null => {
     switch (type) {
       case fieldType.BLANK:
         return (
@@ -98,25 +98,26 @@ const Board = ({ pattern }: BoardProps) => {
     }
   };
 
-  const [board, setBoard] = useState<JSX.Element[][] | null>(null);
+  const [board, setBoard] = useState<JSX.Element[] | null>(null);
 
   const createBoardFromPattern = () => {
     //create board
-    let board = new Array(pattern.length);
+    let newBoard: JSX.Element[] = [];
 
     //create rows
-    let newRow = [];
+    let newRow: ReactNode[] | null = [];
     for (let row = 0; row < pattern.length; row++) {
       for (let column = 0; column < pattern[0].length; column++) {
         //fill row
         newRow.push(transformNumberToField(row, column, pattern[row][column]));
       }
       //add row to board and clear
-      board.push(<tr key={row}>{newRow}</tr>);
+      newBoard[row] = <tr key={row}>{newRow}</tr>;
       newRow = [];
     }
 
-    setBoard(board);
+    console.log(newBoard);
+    setBoard(newBoard);
   };
 
   useEffect(() => {

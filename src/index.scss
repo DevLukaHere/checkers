@@ -33,9 +33,6 @@ body {
 
 table {
   border-spacing: 0;
-}
-
-.container {
   tr:nth-child(odd) td:nth-child(even),
   tr:nth-child(even) td:nth-child(odd) {
     background: sandybrown;
