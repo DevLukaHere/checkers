@@ -1,19 +1,22 @@
 import Board from './components/Board';
-import BoardContextProvider from './context/BoardContext';
 
 function App() {
-  const options = {
-    boardSize: { X: 8, Y: 8 },
-  };
-
+  const pattern = [
+    [2, 0, 2, 0, 2, 0, 2, 0],
+    [0, 2, 0, 2, 0, 2, 0, 2],
+    [2, 0, 2, 0, 2, 0, 2, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+  ];
   return (
-    <BoardContextProvider>
-      <div className="App">
-        <main className="main">
-          <Board {...options} />
-        </main>
-      </div>
-    </BoardContextProvider>
+    <div className="App">
+      <main className="main">
+        <Board pattern={pattern} />
+      </main>
+    </div>
   );
 }
 
