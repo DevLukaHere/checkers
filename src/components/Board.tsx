@@ -22,7 +22,7 @@ const Board = ({ initialPattern }: BoardProps) => {
   const [pattern, setPattern] = useState<number[][]>(initialPattern);
   const [activeField, setActiveField] = useState<ActiveFieldProps | null>(null);
 
-  const inactive = (field: fieldType) => {
+  const changeField = (field: fieldType) => {
     switch (field) {
       case fieldType.BLACK_PAWN_CHECKED:
         return fieldType.BLACK_PAWN;
@@ -36,36 +36,33 @@ const Board = ({ initialPattern }: BoardProps) => {
   };
 
   const handleActivation = (row: number, column: number) => {
-    //Copy old pattern
     let newPattern = pattern.map((row) => row);
 
-    console.log(row, column, activeField);
-    if (activeField) {
-      console.log('Jest aktywny');
-      if (activeField.row === row && activeField.column === column) {
-        newPattern[activeField.row][activeField.column] = inactive(
-          newPattern[activeField.row][activeField.column]
-        );
-        setActiveField(null);
-        console.log('Są takie same');
-      } else {
-        console.log('Nie takie same');
-      }
-    } else {
-      let field: fieldType = newPattern[row][column];
-      switch (field) {
-        case fieldType.BLACK_PAWN:
-          newPattern[row][column] = fieldType.BLACK_PAWN_CHECKED;
-          break;
-        case fieldType.RED_PAWN:
-          newPattern[row][column] = fieldType.RED_PAWN_CHECKED;
-          break;
-        default:
-          break;
-      }
-      setActiveField({ row, column });
-      console.log('Nie ma aktywnego');
+    let field: fieldType = pattern[row][column];
+    switch (field) {
+      case fieldType.BLACK_PAWN:
+        pattern[row][column] = fieldType.BLACK_PAWN_CHECKED;
+        break;
+      case fieldType.RED_PAWN:
+        pattern[row][column] = fieldType.RED_PAWN_CHECKED;
+        break;
+      default:
+        break;
     }
+
+    setActiveField((prevstate) => {
+      //Deleting last checked field
+      if (prevstate) {
+        newPattern[prevstate.row][prevstate.column] = changeField(
+          newPattern[prevstate.row][prevstate.column]
+        );
+      }
+      //Clicking same field again - inactive field
+      if (prevstate && prevstate.row === row && prevstate.column === column)
+        return null;
+
+      return { row, column };
+    });
 
     console.log('New pattern: ', pattern);
     setPattern(newPattern);
