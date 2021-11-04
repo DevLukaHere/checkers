@@ -8,6 +8,7 @@ export type FieldProps = {
   isActive: boolean;
   isPromoted: boolean;
   color: string;
+  setActive: () => void;
 };
 
 const Field = ({
@@ -17,47 +18,27 @@ const Field = ({
   isActive,
   isPromoted,
   color,
+  setActive,
 }: FieldProps) => {
-  //const { board, boardACTIVE, setCurrent } = useContext(BoardContext);
+  const [content, setContent] = useState<JSX.Element | null>(null);
 
-  //const [field, setField] = useState(board[x][y]);
-
-  const getStyles = () => {
+  const createField = () => {
     let className = 'field ';
 
     if (color) className += `field--${color}`;
     if (isActive) className += ` field--active`;
 
-    return className;
-  };
-
-  const [className, setClassName] = useState(getStyles());
-
-  // const handleClick = () => {
-  //   setCurrent({ row, column });
-  // };
-
-  const generateField = () => {
     setContent(
-      <td key={`${row}_${column}`} className={className}>
+      <td key={`${row}_${column}`} className={className} onClick={setActive}>
         {!isEmpty ? <FaChessPawn /> : ' '}
       </td>
     );
   };
 
-  const [content, setContent] = useState<JSX.Element | null>(null);
-
-  // useEffect(() => {
-  //   setField(board[x][y]);
-  // }, [board]);
-
-  // useEffect(() => {
-  //   setClassName(getStyles());
-  // }, [field]);
-
   useEffect(() => {
-    generateField();
-  }, [className]);
+    createField();
+    // eslint-disable-next-line
+  }, [isActive]);
 
   return <>{content}</>;
 };

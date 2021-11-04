@@ -2,19 +2,32 @@ import { useState, useEffect, ReactNode } from 'react';
 import Field from './Field';
 
 export type BoardProps = {
-  pattern: number[][];
+  initialPattern: number[][];
 };
 
 enum fieldType {
   BLANK,
   BLACK_PAWN,
   RED_PAWN,
-  CHECKED,
   BLACK_PAWN_CHECKED,
   RED_PAWN_CHECKED,
 }
 
-const Board = ({ pattern }: BoardProps) => {
+const Board = ({ initialPattern }: BoardProps) => {
+  const [pattern, setPattern] = useState<number[][]>(initialPattern);
+
+  const activeField = (row: number, column: number) => {
+    let newPattern = pattern.map((row) => row);
+    if (newPattern[row][column] === fieldType.BLACK_PAWN)
+      newPattern[row][column] = fieldType.BLACK_PAWN_CHECKED;
+
+    if (newPattern[row][column] === fieldType.RED_PAWN)
+      newPattern[row][column] = fieldType.RED_PAWN_CHECKED;
+
+    console.log('New pattern: ', pattern);
+    setPattern(newPattern);
+  };
+
   const transformNumberToField = (
     row: number,
     column: number,
@@ -31,6 +44,7 @@ const Board = ({ pattern }: BoardProps) => {
             isActive={false}
             isPromoted={false}
             color="blank"
+            setActive={() => activeField(row, column)}
           />
         );
       case fieldType.BLACK_PAWN:
@@ -43,6 +57,7 @@ const Board = ({ pattern }: BoardProps) => {
             isActive={false}
             isPromoted={false}
             color="black"
+            setActive={() => activeField(row, column)}
           />
         );
       case fieldType.RED_PAWN:
@@ -55,18 +70,7 @@ const Board = ({ pattern }: BoardProps) => {
             isActive={false}
             isPromoted={false}
             color="red"
-          />
-        );
-      case fieldType.CHECKED:
-        return (
-          <Field
-            key={`${row}_${column}`}
-            row={row}
-            column={column}
-            isEmpty={true}
-            isActive={true}
-            isPromoted={false}
-            color="blank"
+            setActive={() => activeField(row, column)}
           />
         );
       case fieldType.BLACK_PAWN_CHECKED:
@@ -79,6 +83,7 @@ const Board = ({ pattern }: BoardProps) => {
             isActive={true}
             isPromoted={false}
             color="black"
+            setActive={() => activeField(row, column)}
           />
         );
       case fieldType.RED_PAWN_CHECKED:
@@ -91,6 +96,7 @@ const Board = ({ pattern }: BoardProps) => {
             isActive={true}
             isPromoted={false}
             color="red"
+            setActive={() => activeField(row, column)}
           />
         );
       default:
@@ -101,29 +107,26 @@ const Board = ({ pattern }: BoardProps) => {
   const [board, setBoard] = useState<JSX.Element[] | null>(null);
 
   const createBoardFromPattern = () => {
-    //create board
     let newBoard: JSX.Element[] = [];
 
-    //create rows
     let newRow: ReactNode[] | null = [];
     for (let row = 0; row < pattern.length; row++) {
       for (let column = 0; column < pattern[0].length; column++) {
-        //fill row
         newRow.push(transformNumberToField(row, column, pattern[row][column]));
       }
-      //add row to board and clear
+
       newBoard[row] = <tr key={row}>{newRow}</tr>;
       newRow = [];
     }
 
-    console.log(newBoard);
     setBoard(newBoard);
+    console.log('created board');
   };
 
   useEffect(() => {
     createBoardFromPattern();
     // eslint-disable-next-line
-  }, []);
+  }, [pattern]);
 
   return (
     <table>

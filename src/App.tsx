@@ -1,7 +1,7 @@
 import Board from './components/Board';
 
 function App() {
-  const pattern = [
+  const initialPattern = [
     [2, 0, 2, 0, 2, 0, 2, 0],
     [0, 2, 0, 2, 0, 2, 0, 2],
     [2, 0, 2, 0, 2, 0, 2, 0],
@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="App">
       <main className="main">
-        <Board pattern={pattern} />
+        <Board initialPattern={initialPattern} />
       </main>
     </div>
   );
