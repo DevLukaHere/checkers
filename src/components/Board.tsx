@@ -1,77 +1,47 @@
 import { useState, useEffect, ReactNode } from 'react';
+import { fieldType } from '../App';
 import Field from './Field';
 
 export type BoardProps = {
   initialPattern: number[][];
 };
 
-type ActiveFieldProps = {
-  row: number;
-  column: number;
-};
-
-enum fieldType {
-  BLANK,
-  BLACK_PAWN,
-  RED_PAWN,
-  BLACK_PAWN_CHECKED,
-  RED_PAWN_CHECKED,
-}
-
 const Board = ({ initialPattern }: BoardProps) => {
   const [pattern, setPattern] = useState<number[][]>(initialPattern);
-  const [activeField, setActiveField] = useState<ActiveFieldProps | null>(null);
+  let { BLANK, BLACK_PAWN, RED_PAWN, BLACK_PAWN_CHECKED, RED_PAWN_CHECKED } =
+    fieldType;
 
-  const changeField = (field: fieldType) => {
+  const toggleField = (field: fieldType): fieldType => {
     switch (field) {
-      case fieldType.BLACK_PAWN_CHECKED:
-        return fieldType.BLACK_PAWN;
-
-      case fieldType.RED_PAWN_CHECKED:
-        return fieldType.RED_PAWN;
-
+      case BLACK_PAWN:
+        return BLACK_PAWN_CHECKED;
+      case RED_PAWN:
+        return RED_PAWN_CHECKED;
+      case BLACK_PAWN_CHECKED:
+        return BLACK_PAWN;
+      case RED_PAWN_CHECKED:
+        return RED_PAWN;
       default:
         return field;
     }
   };
 
-  const handleActivation = (row: number, column: number) => {
-    let newPattern = pattern.map((row) => row);
+  const handleActivation = (row: number, column: number): void => {
+    setPattern((prevPattern) => {
+      //Copying last pattern, inactive last active field
+      let newPattern: number[][] = prevPattern.map((row) =>
+        row.map((field) =>
+          field === BLACK_PAWN_CHECKED || field === RED_PAWN_CHECKED
+            ? toggleField(field)
+            : field
+        )
+      );
 
-    let field: fieldType = pattern[row][column];
-    switch (field) {
-      case fieldType.BLACK_PAWN:
-        pattern[row][column] = fieldType.BLACK_PAWN_CHECKED;
-        break;
-      case fieldType.RED_PAWN:
-        pattern[row][column] = fieldType.RED_PAWN_CHECKED;
-        break;
-      default:
-        break;
-    }
+      newPattern[row][column] = toggleField(newPattern[row][column]);
 
-    setActiveField((prevstate) => {
-      //Deleting last checked field
-      if (prevstate) {
-        newPattern[prevstate.row][prevstate.column] = changeField(
-          newPattern[prevstate.row][prevstate.column]
-        );
-      }
-      //Clicking same field again - inactive field
-      if (prevstate && prevstate.row === row && prevstate.column === column)
-        return null;
-
-      return { row, column };
+      return newPattern;
     });
-
-    console.log('New pattern: ', pattern);
-    setPattern(newPattern);
   };
-
-  useEffect(() => {
-    console.log('Activefield:', activeField);
-    // eslint-disable-next-line
-  }, [activeField]);
 
   const transformNumberToField = (
     row: number,
@@ -79,7 +49,7 @@ const Board = ({ initialPattern }: BoardProps) => {
     type: fieldType
   ): JSX.Element | null => {
     switch (type) {
-      case fieldType.BLANK:
+      case BLANK:
         return (
           <Field
             key={`${row}_${column}`}
@@ -92,7 +62,7 @@ const Board = ({ initialPattern }: BoardProps) => {
             setActive={() => handleActivation(row, column)}
           />
         );
-      case fieldType.BLACK_PAWN:
+      case BLACK_PAWN:
         return (
           <Field
             key={`${row}_${column}`}
@@ -105,7 +75,7 @@ const Board = ({ initialPattern }: BoardProps) => {
             setActive={() => handleActivation(row, column)}
           />
         );
-      case fieldType.RED_PAWN:
+      case RED_PAWN:
         return (
           <Field
             key={`${row}_${column}`}
@@ -118,7 +88,7 @@ const Board = ({ initialPattern }: BoardProps) => {
             setActive={() => handleActivation(row, column)}
           />
         );
-      case fieldType.BLACK_PAWN_CHECKED:
+      case BLACK_PAWN_CHECKED:
         return (
           <Field
             key={`${row}_${column}`}
@@ -131,7 +101,7 @@ const Board = ({ initialPattern }: BoardProps) => {
             setActive={() => handleActivation(row, column)}
           />
         );
-      case fieldType.RED_PAWN_CHECKED:
+      case RED_PAWN_CHECKED:
         return (
           <Field
             key={`${row}_${column}`}
@@ -165,11 +135,12 @@ const Board = ({ initialPattern }: BoardProps) => {
     }
 
     setBoard(newBoard);
-    console.log('created board');
   };
 
   useEffect(() => {
+    console.log('Current pattern: ', pattern);
     createBoardFromPattern();
+
     // eslint-disable-next-line
   }, [pattern]);
 
