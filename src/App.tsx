@@ -2,9 +2,10 @@ import Board from './components/Board';
 
 export enum fieldType {
   BLANK,
+  CHECKED,
   BLACK_PAWN,
-  RED_PAWN,
   BLACK_PAWN_CHECKED,
+  RED_PAWN,
   RED_PAWN_CHECKED,
 }
 
@@ -15,9 +16,9 @@ function App() {
     [2, 0, 2, 0, 2, 0, 2, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0],
-    [0, 1, 0, 1, 0, 1, 0, 1],
+    [0, 4, 0, 4, 0, 4, 0, 4],
+    [4, 0, 4, 0, 4, 0, 4, 0],
+    [0, 4, 0, 4, 0, 4, 0, 4],
   ];
   return (
     <div className="App">

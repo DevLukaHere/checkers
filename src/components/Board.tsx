@@ -6,13 +6,34 @@ export type BoardProps = {
   initialPattern: number[][];
 };
 
-const Board = ({ initialPattern }: BoardProps) => {
-  const [pattern, setPattern] = useState<number[][]>(initialPattern);
-  let { BLANK, BLACK_PAWN, RED_PAWN, BLACK_PAWN_CHECKED, RED_PAWN_CHECKED } =
-    fieldType;
+export type FieldID = {
+  row: number;
+  column: number;
+};
 
-  const toggleField = (field: fieldType): fieldType => {
+export type Move = {
+  from: FieldID;
+  to: FieldID;
+};
+
+const Board = ({ initialPattern }: BoardProps) => {
+  let {
+    BLANK,
+    CHECKED,
+    BLACK_PAWN,
+    BLACK_PAWN_CHECKED,
+    RED_PAWN,
+    RED_PAWN_CHECKED,
+  } = fieldType;
+
+  const [pattern, setPattern] = useState<number[][]>(initialPattern);
+
+  const toggleFieldActive = (field: fieldType): fieldType => {
     switch (field) {
+      case BLANK:
+        return CHECKED;
+      case CHECKED:
+        return BLANK;
       case BLACK_PAWN:
         return BLACK_PAWN_CHECKED;
       case RED_PAWN:
@@ -26,24 +47,81 @@ const Board = ({ initialPattern }: BoardProps) => {
     }
   };
 
+  const getMoves = (
+    pattern: number[][],
+    row: number,
+    column: number
+  ): Move[] => {
+    let moves: Move[] = [];
+
+    let field: fieldType = pattern[row][column];
+
+    if (field === BLACK_PAWN) {
+      if (pattern[row + 1][column + 1] === BLANK)
+        moves.push({
+          from: { row, column },
+          to: { row: row + 1, column: column + 1 },
+        });
+
+      if (pattern[row + 1][column + 1] === BLANK)
+        moves.push({
+          from: { row, column },
+          to: { row: row + 1, column: column - 1 },
+        });
+    }
+
+    if (field === RED_PAWN) {
+      if (pattern[row - 1][column + 1] === BLANK)
+        moves.push({
+          from: { row, column },
+          to: { row: row - 1, column: column + 1 },
+        });
+
+      if (pattern[row - 1][column - 1] === BLANK)
+        moves.push({
+          from: { row, column },
+          to: { row: row - 1, column: column - 1 },
+        });
+    }
+
+    return moves;
+  };
+
   const handleActivation = (row: number, column: number): void => {
     setPattern((prevPattern) => {
-      //Copying last pattern, inactive last active field
+      //Copying last pattern, inactive all active fields
       let newPattern: number[][] = prevPattern.map((row) =>
         row.map((field) =>
-          field === BLACK_PAWN_CHECKED || field === RED_PAWN_CHECKED
-            ? toggleField(field)
+          field === CHECKED ||
+          field === BLACK_PAWN_CHECKED ||
+          field === RED_PAWN_CHECKED
+            ? toggleFieldActive(field)
             : field
         )
       );
 
-      newPattern[row][column] = toggleField(newPattern[row][column]);
+      //Searching for moves
+      let moves: Move[] = getMoves(newPattern, row, column);
+      console.log(moves);
+
+      //Activating clicked field
+      if (moves.length)
+        newPattern[row][column] = toggleFieldActive(newPattern[row][column]);
+
+      //Making moves active
+      moves.forEach((move) => {
+        newPattern[move.to.row][move.to.column] = toggleFieldActive(
+          newPattern[move.to.row][move.to.column]
+        );
+      });
 
       return newPattern;
     });
   };
 
-  const transformNumberToField = (
+  const [board, setBoard] = useState<JSX.Element[] | null>(null);
+
+  const Transform = (
     row: number,
     column: number,
     type: fieldType
@@ -57,6 +135,19 @@ const Board = ({ initialPattern }: BoardProps) => {
             column={column}
             isEmpty={true}
             isActive={false}
+            isPromoted={false}
+            color="blank"
+            setActive={() => handleActivation(row, column)}
+          />
+        );
+      case CHECKED:
+        return (
+          <Field
+            key={`${row}_${column}`}
+            row={row}
+            column={column}
+            isEmpty={true}
+            isActive={true}
             isPromoted={false}
             color="blank"
             setActive={() => handleActivation(row, column)}
@@ -119,15 +210,13 @@ const Board = ({ initialPattern }: BoardProps) => {
     }
   };
 
-  const [board, setBoard] = useState<JSX.Element[] | null>(null);
-
-  const createBoardFromPattern = () => {
+  const Print = () => {
     let newBoard: JSX.Element[] = [];
 
     let newRow: ReactNode[] | null = [];
     for (let row = 0; row < pattern.length; row++) {
       for (let column = 0; column < pattern[0].length; column++) {
-        newRow.push(transformNumberToField(row, column, pattern[row][column]));
+        newRow.push(Transform(row, column, pattern[row][column]));
       }
 
       newBoard[row] = <tr key={row}>{newRow}</tr>;
@@ -139,8 +228,7 @@ const Board = ({ initialPattern }: BoardProps) => {
 
   useEffect(() => {
     console.log('Current pattern: ', pattern);
-    createBoardFromPattern();
-
+    Print();
     // eslint-disable-next-line
   }, [pattern]);
 
