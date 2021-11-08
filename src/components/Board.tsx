@@ -25,6 +25,8 @@ const Board = ({ initialPattern }: BoardProps) => {
   } = fieldType;
 
   const [pattern, setPattern] = useState<number[][]>(initialPattern);
+  const [activeField, setActiveField] = useState<FieldID | null>(null);
+
   const [currentTurn, setCurrentTurn] = useState<fieldType>(BLACK_PAWN);
   const [moves, setMoves] = useState<Move[]>([]);
 
@@ -34,39 +36,87 @@ const Board = ({ initialPattern }: BoardProps) => {
     );
 
   const handleActivation = (row: number, column: number): void => {
-    setPattern((prevPattern) => {
-      //Copying last pattern, inactive all active fields
-      let newPattern: number[][] = inactiveFields(prevPattern);
+    if (activeField) {
+      //The same field clicked again
+      if (activeField.row === row && activeField.column === column) {
+        setActiveField(null);
+      } else {
+        let clickedField: fieldType = pattern[row][column];
 
-      //Making move (if exists)
-      if (moves.length) {
-        moves.forEach((move) => {
-          if (move.to.row === row && move.to.column === column) {
-            newPattern = makeMove(newPattern, move);
-            newPattern = inactiveFields(prevPattern);
-            return newPattern;
-          }
-        });
+        //The user makes move
+        if (clickedField === CHECKED) {
+          setPattern((currentPattern) => {
+            let newMove = moves.find(
+              (move) => move.to.row === row && move.to.column === column
+            );
+
+            if (newMove) {
+              let newPattern: number[][] = makeMove(currentPattern, newMove);
+              return newPattern;
+            }
+
+            return currentPattern;
+          });
+          setActiveField(null);
+        } else {
+          //The user clicked another field
+          setActiveField({ row, column });
+        }
       }
-
-      //Searching for moves
-      let newMoves: Move[] = getMoves(newPattern, row, column);
-
-      if (newMoves.length) {
-        //Activating fields
-        let fields: FieldID[] = [];
-        fields.push({ row, column });
-        newMoves.forEach((move) => {
-          let { row, column } = move.to;
-          fields.push({ row, column });
-        });
-        newPattern = activeFields(newPattern, fields);
-        setMoves(newMoves);
+    } else {
+      //Was pawn clicked?
+      if (
+        pattern[row][column] === BLACK_PAWN ||
+        pattern[row][column] === RED_PAWN
+      ) {
+        setActiveField({ row, column });
+      } else {
+        console.log('Not pawn clicked!');
       }
-
-      return newPattern;
-    });
+    }
   };
+
+  useEffect(() => {
+    console.log('Active field: ', activeField);
+
+    //Searching for moves
+    if (activeField) {
+      let newMoves: Move[] = getMoves(
+        pattern,
+        activeField.row,
+        activeField.column
+      );
+
+      if (newMoves.length) setMoves(newMoves);
+    } else {
+      setMoves([]);
+    }
+    // eslint-disable-next-line
+  }, [activeField]);
+
+  useEffect(() => {
+    console.log('Current moves: ', moves);
+
+    //Showing possible moves
+    if (moves.length) {
+      setPattern((currentPattern) => {
+        let newPattern: number[][] = inactiveFields(currentPattern);
+        newPattern = activeFields(newPattern, moves);
+        return newPattern;
+      });
+    } else {
+      setPattern((currentPattern) => {
+        let newPattern: number[][] = inactiveFields(currentPattern);
+        return newPattern;
+      });
+    }
+  }, [moves]);
+
+  useEffect(() => {
+    console.log('Current pattern: ', pattern);
+    Print();
+    // eslint-disable-next-line
+  }, [pattern]);
 
   const [board, setBoard] = useState<JSX.Element[] | null>(null);
 
@@ -174,17 +224,6 @@ const Board = ({ initialPattern }: BoardProps) => {
 
     setBoard(newBoard);
   };
-
-  useEffect(() => {
-    console.log('Current pattern: ', pattern);
-    Print();
-    // eslint-disable-next-line
-  }, [pattern]);
-
-  useEffect(() => {
-    console.log('Current moves: ', moves);
-    // eslint-disable-next-line
-  }, [moves]);
 
   return (
     <table>

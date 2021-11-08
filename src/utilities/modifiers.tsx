@@ -42,9 +42,18 @@ const toggleFieldActive = (field: fieldType): fieldType => {
 
 export const activeFields = (
   pattern: number[][],
-  fields: FieldID[]
+  moves: Move[]
 ): number[][] => {
   let newPattern: number[][] = pattern.map((row) => row.map((field) => field));
+
+  let fields: FieldID[] = [];
+
+  let { row, column } = moves[0].from;
+  fields.push({ row, column });
+  moves.forEach((move) => {
+    let { row, column } = move.to;
+    fields.push({ row, column });
+  });
 
   fields.forEach((field) => {
     newPattern[field.row][field.column] = toggleFieldActive(
@@ -74,6 +83,17 @@ export type Move = {
   capturing?: FieldID;
 };
 
+const isFieldFree = (field: fieldType): boolean => {
+  return field === BLANK || field === CHECKED ? true : false;
+};
+
+const isOutOfBundaries = (shiftedRow: number, shiftedColumn: number) => {
+  if (shiftedRow < 0 || shiftedRow > 7) return true;
+  if (shiftedColumn < 0 || shiftedColumn > 7) return true;
+
+  return false;
+};
+
 const checkMove = (
   pattern: number[][],
   row: number,
@@ -81,25 +101,37 @@ const checkMove = (
   column: number,
   columnShift: number,
   moves: Move[]
-) => {
+): void => {
   let currentField: fieldType = pattern[row][column];
-  let firstField: fieldType = pattern[row + rowShift][column + columnShift];
-  let secondField: fieldType =
-    pattern[row + 2 * rowShift][column + 2 * columnShift];
 
-  //Standard move
-  if (firstField === BLANK || firstField === CHECKED) {
+  if (isOutOfBundaries(row + rowShift, column + columnShift)) return;
+  let firstField: fieldType = pattern[row + rowShift][column + columnShift];
+
+  //Standard BLACK_PAWN move
+  if (currentField === BLACK_PAWN && isFieldFree(firstField) && rowShift > 0) {
     moves.push({
       from: { row, column },
       to: { row: row + rowShift, column: column + columnShift },
     });
   }
 
+  //Standard RED_PAWN move
+  if (currentField === RED_PAWN && isFieldFree(firstField) && rowShift < 0) {
+    moves.push({
+      from: { row, column },
+      to: { row: row + rowShift, column: column + columnShift },
+    });
+  }
+
+  if (isOutOfBundaries(row + 2 * rowShift, column + 2 * columnShift)) return;
+  let secondField: fieldType =
+    pattern[row + 2 * rowShift][column + 2 * columnShift];
+
   //Capturing by BLACK_PAWN
   if (
     currentField === BLACK_PAWN &&
     firstField === RED_PAWN &&
-    secondField === BLANK
+    isFieldFree(secondField)
   ) {
     moves.push({
       from: { row, column },
@@ -112,7 +144,7 @@ const checkMove = (
   if (
     currentField === RED_PAWN &&
     firstField === BLACK_PAWN &&
-    secondField === BLANK
+    isFieldFree(secondField)
   ) {
     moves.push({
       from: { row, column },
