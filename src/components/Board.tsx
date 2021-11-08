@@ -27,6 +27,7 @@ const Board = ({ initialPattern }: BoardProps) => {
   } = fieldType;
 
   const [pattern, setPattern] = useState<number[][]>(initialPattern);
+  const [moves, setMoves] = useState<Move[]>([]);
 
   const toggleFieldActive = (field: fieldType): fieldType => {
     switch (field) {
@@ -47,6 +48,25 @@ const Board = ({ initialPattern }: BoardProps) => {
     }
   };
 
+  const checkMove = (
+    pattern: number[][],
+    row: number,
+    rowShift: number,
+    column: number,
+    columnShift: number,
+    moves: Move[]
+  ) => {
+    //Standard move
+    if (
+      pattern[row + rowShift][column + columnShift] === BLANK ||
+      pattern[row + rowShift][column + columnShift] === CHECKED
+    )
+      moves.push({
+        from: { row, column },
+        to: { row: row + rowShift, column: column + columnShift },
+      });
+  };
+
   const getMoves = (
     pattern: number[][],
     row: number,
@@ -57,31 +77,13 @@ const Board = ({ initialPattern }: BoardProps) => {
     let field: fieldType = pattern[row][column];
 
     if (field === BLACK_PAWN) {
-      if (pattern[row + 1][column + 1] === BLANK)
-        moves.push({
-          from: { row, column },
-          to: { row: row + 1, column: column + 1 },
-        });
-
-      if (pattern[row + 1][column + 1] === BLANK)
-        moves.push({
-          from: { row, column },
-          to: { row: row + 1, column: column - 1 },
-        });
+      checkMove(pattern, row, 1, column, -1, moves);
+      checkMove(pattern, row, 1, column, 1, moves);
     }
 
     if (field === RED_PAWN) {
-      if (pattern[row - 1][column + 1] === BLANK)
-        moves.push({
-          from: { row, column },
-          to: { row: row - 1, column: column + 1 },
-        });
-
-      if (pattern[row - 1][column - 1] === BLANK)
-        moves.push({
-          from: { row, column },
-          to: { row: row - 1, column: column - 1 },
-        });
+      checkMove(pattern, row, -1, column, -1, moves);
+      checkMove(pattern, row, -1, column, 1, moves);
     }
 
     return moves;
@@ -100,20 +102,35 @@ const Board = ({ initialPattern }: BoardProps) => {
         )
       );
 
-      //Searching for moves
-      let moves: Move[] = getMoves(newPattern, row, column);
-      console.log(moves);
+      //Making move (if exists)
+      if (moves.length) {
+        moves.forEach((move) => {
+          if (move.to.row === row && move.to.column === column) {
+            newPattern[move.to.row][move.to.column] =
+              newPattern[move.from.row][move.from.column];
+            newPattern[move.from.row][move.from.column] = BLANK;
+          }
+          setMoves([]);
+        });
+      } else {
+        //Searching for moves
+        let newMoves: Move[] = getMoves(newPattern, row, column);
 
-      //Activating clicked field
-      if (moves.length)
-        newPattern[row][column] = toggleFieldActive(newPattern[row][column]);
+        if (newMoves.length) {
+          //Activating clicked field
+          newPattern[row][column] = toggleFieldActive(newPattern[row][column]);
 
-      //Making moves active
-      moves.forEach((move) => {
-        newPattern[move.to.row][move.to.column] = toggleFieldActive(
-          newPattern[move.to.row][move.to.column]
-        );
-      });
+          //Making other moves active
+          newMoves.forEach((newMoves) => {
+            let { row, column } = newMoves.to;
+            newPattern[row][column] = toggleFieldActive(
+              newPattern[row][column]
+            );
+          });
+        }
+
+        setMoves(newMoves);
+      }
 
       return newPattern;
     });
@@ -231,6 +248,12 @@ const Board = ({ initialPattern }: BoardProps) => {
     Print();
     // eslint-disable-next-line
   }, [pattern]);
+
+  useEffect(() => {
+    console.log('Current moves: ', moves);
+    Print();
+    // eslint-disable-next-line
+  }, [moves]);
 
   return (
     <table>
