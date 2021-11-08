@@ -38,7 +38,7 @@ const Field = ({
   useEffect(() => {
     createField();
     // eslint-disable-next-line
-  }, [isActive]);
+  }, [isActive, isEmpty]);
 
   return <>{content}</>;
 };

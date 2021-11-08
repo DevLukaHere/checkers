@@ -1,19 +1,17 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { fieldType } from '../App';
 import Field from './Field';
+import {
+  FieldID,
+  activeFields,
+  inactiveFields,
+  Move,
+  getMoves,
+  makeMove,
+} from '../utilities/modifiers';
 
 export type BoardProps = {
   initialPattern: number[][];
-};
-
-export type FieldID = {
-  row: number;
-  column: number;
-};
-
-export type Move = {
-  from: FieldID;
-  to: FieldID;
 };
 
 const Board = ({ initialPattern }: BoardProps) => {
@@ -27,108 +25,42 @@ const Board = ({ initialPattern }: BoardProps) => {
   } = fieldType;
 
   const [pattern, setPattern] = useState<number[][]>(initialPattern);
+  const [currentTurn, setCurrentTurn] = useState<fieldType>(BLACK_PAWN);
   const [moves, setMoves] = useState<Move[]>([]);
 
-  const toggleFieldActive = (field: fieldType): fieldType => {
-    switch (field) {
-      case BLANK:
-        return CHECKED;
-      case CHECKED:
-        return BLANK;
-      case BLACK_PAWN:
-        return BLACK_PAWN_CHECKED;
-      case RED_PAWN:
-        return RED_PAWN_CHECKED;
-      case BLACK_PAWN_CHECKED:
-        return BLACK_PAWN;
-      case RED_PAWN_CHECKED:
-        return RED_PAWN;
-      default:
-        return field;
-    }
-  };
-
-  const checkMove = (
-    pattern: number[][],
-    row: number,
-    rowShift: number,
-    column: number,
-    columnShift: number,
-    moves: Move[]
-  ) => {
-    //Standard move
-    if (
-      pattern[row + rowShift][column + columnShift] === BLANK ||
-      pattern[row + rowShift][column + columnShift] === CHECKED
-    )
-      moves.push({
-        from: { row, column },
-        to: { row: row + rowShift, column: column + columnShift },
-      });
-  };
-
-  const getMoves = (
-    pattern: number[][],
-    row: number,
-    column: number
-  ): Move[] => {
-    let moves: Move[] = [];
-
-    let field: fieldType = pattern[row][column];
-
-    if (field === BLACK_PAWN) {
-      checkMove(pattern, row, 1, column, -1, moves);
-      checkMove(pattern, row, 1, column, 1, moves);
-    }
-
-    if (field === RED_PAWN) {
-      checkMove(pattern, row, -1, column, -1, moves);
-      checkMove(pattern, row, -1, column, 1, moves);
-    }
-
-    return moves;
-  };
+  const changeTurn = (): void =>
+    setCurrentTurn((prevState) =>
+      prevState === BLACK_PAWN ? RED_PAWN : BLACK_PAWN
+    );
 
   const handleActivation = (row: number, column: number): void => {
     setPattern((prevPattern) => {
       //Copying last pattern, inactive all active fields
-      let newPattern: number[][] = prevPattern.map((row) =>
-        row.map((field) =>
-          field === CHECKED ||
-          field === BLACK_PAWN_CHECKED ||
-          field === RED_PAWN_CHECKED
-            ? toggleFieldActive(field)
-            : field
-        )
-      );
+      let newPattern: number[][] = inactiveFields(prevPattern);
 
       //Making move (if exists)
       if (moves.length) {
         moves.forEach((move) => {
           if (move.to.row === row && move.to.column === column) {
-            newPattern[move.to.row][move.to.column] =
-              newPattern[move.from.row][move.from.column];
-            newPattern[move.from.row][move.from.column] = BLANK;
+            newPattern = makeMove(newPattern, move);
+            newPattern = inactiveFields(prevPattern);
+            return newPattern;
           }
-          setMoves([]);
         });
-      } else {
-        //Searching for moves
-        let newMoves: Move[] = getMoves(newPattern, row, column);
+      }
 
-        if (newMoves.length) {
-          //Activating clicked field
-          newPattern[row][column] = toggleFieldActive(newPattern[row][column]);
+      //Searching for moves
+      let newMoves: Move[] = getMoves(newPattern, row, column);
 
-          //Making other moves active
-          newMoves.forEach((newMoves) => {
-            let { row, column } = newMoves.to;
-            newPattern[row][column] = toggleFieldActive(
-              newPattern[row][column]
-            );
-          });
-        }
-
+      if (newMoves.length) {
+        //Activating fields
+        let fields: FieldID[] = [];
+        fields.push({ row, column });
+        newMoves.forEach((move) => {
+          let { row, column } = move.to;
+          fields.push({ row, column });
+        });
+        newPattern = activeFields(newPattern, fields);
         setMoves(newMoves);
       }
 
@@ -251,7 +183,6 @@ const Board = ({ initialPattern }: BoardProps) => {
 
   useEffect(() => {
     console.log('Current moves: ', moves);
-    Print();
     // eslint-disable-next-line
   }, [moves]);
 
