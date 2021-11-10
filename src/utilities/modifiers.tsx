@@ -1,4 +1,4 @@
-enum fieldType {
+export enum fieldType {
   BLANK,
   CHECKED,
   BLACK_PAWN,

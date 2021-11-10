@@ -1,5 +1,8 @@
 import { useState, useEffect, ReactNode } from 'react';
-import { fieldType } from '../App';
+import { useSelector, useDispatch } from 'react-redux';
+
+import { pawnMove } from '../actions';
+import { fieldType } from '../utilities/modifiers';
 import Field from './Field';
 import {
   FieldID,
@@ -10,11 +13,7 @@ import {
   makeMove,
 } from '../utilities/modifiers';
 
-export type BoardProps = {
-  initialPattern: number[][];
-};
-
-const Board = ({ initialPattern }: BoardProps) => {
+const Board = () => {
   let {
     BLANK,
     CHECKED,
@@ -24,7 +23,9 @@ const Board = ({ initialPattern }: BoardProps) => {
     RED_PAWN_CHECKED,
   } = fieldType;
 
-  const [pattern, setPattern] = useState<number[][]>(initialPattern);
+  const pattern = useSelector((state: any) => state.pattern);
+  const dispatch = useDispatch();
+
   const [activeField, setActiveField] = useState<FieldID | null>(null);
 
   const [currentTurn, setCurrentTurn] = useState<fieldType>(BLACK_PAWN);
@@ -36,49 +37,46 @@ const Board = ({ initialPattern }: BoardProps) => {
     );
 
   const handleActivation = (row: number, column: number): void => {
-    if (activeField) {
-      //The same field clicked again
-      if (activeField.row === row && activeField.column === column) {
-        setActiveField(null);
-      } else {
-        let clickedField: fieldType = pattern[row][column];
+    dispatch(pawnMove());
 
-        //The user makes move
-        if (clickedField === CHECKED) {
-          setPattern((currentPattern) => {
-            let newMove = moves.find(
-              (move) => move.to.row === row && move.to.column === column
-            );
-
-            if (newMove) {
-              let newPattern: number[][] = makeMove(currentPattern, newMove);
-              return newPattern;
-            }
-
-            return currentPattern;
-          });
-          setActiveField(null);
-        } else {
-          //The user clicked another field
-          setActiveField({ row, column });
-        }
-      }
-    } else {
-      //Was pawn clicked?
-      if (
-        pattern[row][column] === BLACK_PAWN ||
-        pattern[row][column] === RED_PAWN
-      ) {
-        setActiveField({ row, column });
-      } else {
-        console.log('Not pawn clicked!');
-      }
-    }
+    // if (activeField) {
+    //   //The same field clicked again
+    //   if (activeField.row === row && activeField.column === column) {
+    //     setActiveField(null);
+    //   } else {
+    //     let clickedField: fieldType = pattern[row][column];
+    //     //The user makes move
+    //     if (clickedField === CHECKED) {
+    //       setPattern((currentPattern) => {
+    //         let newMove = moves.find(
+    //           (move) => move.to.row === row && move.to.column === column
+    //         );
+    //         if (newMove) {
+    //           let newPattern: number[][] = makeMove(currentPattern, newMove);
+    //           return newPattern;
+    //         }
+    //         return currentPattern;
+    //       });
+    //       setActiveField(null);
+    //     } else {
+    //       //The user clicked another field
+    //       setActiveField({ row, column });
+    //     }
+    //   }
+    // } else {
+    //   //Was pawn clicked?
+    //   if (
+    //     pattern[row][column] === BLACK_PAWN ||
+    //     pattern[row][column] === RED_PAWN
+    //   ) {
+    //     setActiveField({ row, column });
+    //   } else {
+    //     console.log('Not pawn clicked!');
+    //   }
+    // }
   };
 
   useEffect(() => {
-    console.log('Active field: ', activeField);
-
     //Searching for moves
     if (activeField) {
       let newMoves: Move[] = getMoves(
@@ -95,25 +93,22 @@ const Board = ({ initialPattern }: BoardProps) => {
   }, [activeField]);
 
   useEffect(() => {
-    console.log('Current moves: ', moves);
-
-    //Showing possible moves
-    if (moves.length) {
-      setPattern((currentPattern) => {
-        let newPattern: number[][] = inactiveFields(currentPattern);
-        newPattern = activeFields(newPattern, moves);
-        return newPattern;
-      });
-    } else {
-      setPattern((currentPattern) => {
-        let newPattern: number[][] = inactiveFields(currentPattern);
-        return newPattern;
-      });
-    }
+    // //Showing possible moves
+    // if (moves.length) {
+    //   setPattern((currentPattern) => {
+    //     let newPattern: number[][] = inactiveFields(currentPattern);
+    //     newPattern = activeFields(newPattern, moves);
+    //     return newPattern;
+    //   });
+    // } else {
+    //   setPattern((currentPattern) => {
+    //     let newPattern: number[][] = inactiveFields(currentPattern);
+    //     return newPattern;
+    //   });
+    // }
   }, [moves]);
 
   useEffect(() => {
-    console.log('Current pattern: ', pattern);
     Print();
     // eslint-disable-next-line
   }, [pattern]);
