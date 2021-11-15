@@ -18,13 +18,8 @@ export const getPawnMoves = (pattern: number[][], fieldID: fieldID): move[] => {
   checkMove(pattern, row, -1, column, -1, moves);
   checkMove(pattern, row, -1, column, 1, moves);
 
-  //Checking if there are capturing moves
-  let isCapturing = false;
-  moves.forEach((move) => {
-    if (move.capturing) isCapturing = true;
-  });
   //If yes, we remove standard moves
-  if (isCapturing) moves = moves.filter((move) => move.capturing);
+  if (includesCapturing(moves)) moves = moves.filter((move) => move.capturing);
 
   return moves;
 };
@@ -93,10 +88,6 @@ export const clearPossibleMoves = (pattern: number[][]): number[][] => {
     )
   );
   return newPattern;
-};
-
-const isFieldFree = (field: fieldType): boolean => {
-  return field === BLANK || field === CHECKED ? true : false;
 };
 
 const isOutOfBundaries = (shiftedRow: number, shiftedColumn: number) => {
@@ -184,4 +175,47 @@ export const makeMove = (pattern: number[][], move: move): number[][] => {
     newPattern[move.capturing.row][move.capturing.column] = BLANK;
 
   return newPattern;
+};
+
+const includesCapturing = (moves: move[]): boolean => {
+  let isCapturing = false;
+  moves.forEach((move) => {
+    if (move.capturing) isCapturing = true;
+  });
+
+  return isCapturing;
+};
+
+export const checkIfCapturingExists = (
+  pattern: number[][],
+  isBlackTurn: boolean
+): boolean => {
+  let capturingExists = false;
+
+  let moves: move[] = [];
+  for (let row = 0; row < pattern.length; row++) {
+    for (let column = 0; column < pattern[0].length; column++) {
+      if (
+        (isBlack(pattern[row][column]) && isBlackTurn) ||
+        (isRed(pattern[row][column]) && !isBlackTurn)
+      )
+        getPawnMoves(pattern, { row, column }).map((move) => moves.push(move));
+    }
+  }
+  console.log(moves, pattern);
+  if (includesCapturing(moves)) capturingExists = true;
+
+  return capturingExists;
+};
+
+const isFieldFree = (field: fieldType): boolean => {
+  return field === BLANK || field === CHECKED ? true : false;
+};
+
+const isBlack = (field: fieldType): boolean => {
+  return field === BLACK_PAWN || field === BLACK_PAWN_CHECKED ? true : false;
+};
+
+const isRed = (field: fieldType): boolean => {
+  return field === RED_PAWN || field === RED_PAWN_CHECKED ? true : false;
 };

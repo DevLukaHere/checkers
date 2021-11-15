@@ -1,10 +1,12 @@
 import { AnyAction } from 'redux';
 import { fieldID, move } from '../../types';
+
 import {
   getPawnMoves,
   showPossibleMoves,
   clearPossibleMoves,
   makeMove,
+  checkIfCapturingExists,
 } from '../../utilities/patternModifiers';
 
 type CheckersProps = {
@@ -12,6 +14,7 @@ type CheckersProps = {
   activePawn: fieldID | null;
   moves: move[];
   pattern: number[][];
+  isCapturingMove: boolean;
 };
 
 const initialPattern: number[][] = [
@@ -30,6 +33,7 @@ const initialState: CheckersProps = {
   activePawn: null,
   moves: [],
   pattern: initialPattern,
+  isCapturingMove: false,
 };
 
 const checkersReducer = (state = initialState, action: AnyAction) => {
@@ -55,6 +59,14 @@ const checkersReducer = (state = initialState, action: AnyAction) => {
         activePawn: null,
         moves: [],
         pattern: makeMove(state.pattern, action.payload),
+      };
+    case 'CHECK_CAPTURING':
+      return {
+        ...state,
+        isCapturingMove: checkIfCapturingExists(
+          state.pattern,
+          state.isBlackTurn
+        ),
       };
 
     default:

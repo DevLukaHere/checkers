@@ -1,7 +1,12 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { activePawn, inactivePawn, movePawn } from '../state/actions';
+import {
+  activePawn,
+  inactivePawn,
+  movePawn,
+  checkCapturing,
+} from '../state/actions';
 
 import Field from './Field';
 import { fieldType, move } from '../types';
@@ -10,7 +15,6 @@ import { store } from '../state/store';
 
 const Board = () => {
   const checkers = useSelector((state: any) => state.checkers);
-
   const dispatch = useDispatch();
 
   const handleClick = (row: number, column: number): void => {
@@ -29,9 +33,18 @@ const Board = () => {
           let move = checkers.moves.find(
             (move: move) => move.to.row === row && move.to.column === column
           );
-          if (move)
-            //Making move
-            dispatch(movePawn(move));
+          if (move) {
+            //Capturing is obligatory
+            if (!move.capturing && checkers.isCapturingMove) {
+              alert('PRZYMUS BICIA!');
+              dispatch(inactivePawn());
+            } else {
+              //Making move
+              dispatch(movePawn(move));
+              dispatch(checkCapturing());
+            }
+          }
+
           //Changing activePawn
           else dispatch(activePawn({ row, column }));
         }
@@ -43,13 +56,13 @@ const Board = () => {
   };
 
   const isCorrectPlayer = (row: number, column: number): boolean => {
-    let { BLACK_PAWN, RED_PAWN } = fieldType;
+    let { BLACK_PAWN, RED_PAWN, BLANK } = fieldType;
 
     let { isBlackTurn } = store.getState().checkers;
 
     let type = checkers.pattern[row][column];
 
-    if (type !== BLACK_PAWN && type !== RED_PAWN) return true;
+    if (type !== BLACK_PAWN && type !== RED_PAWN && type !== BLANK) return true;
 
     if (type === BLACK_PAWN && isBlackTurn === true) return true;
 

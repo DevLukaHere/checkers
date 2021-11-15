@@ -11,3 +11,7 @@ export const inactivePawn = () => {
 export const movePawn = (move: move) => {
   return { type: 'MOVE_PAWN', payload: move };
 };
+
+export const checkCapturing = () => {
+  return { type: 'CHECK_CAPTURING' };
+};

@@ -26,6 +26,11 @@ body {
   align-items: center;
 }
 
+.header {
+  font-size: 5em;
+  color: white;
+}
+
 .main {
   display: flex;
   flex-direction: column;
@@ -43,11 +48,20 @@ table {
   margin: 0;
 }
 
+.fieldID {
+  color: transparent;
+  font-size: 2.2rem;
+
+  &:hover {
+    color: red;
+  }
+}
+
 .field {
   min-width: 110px;
   height: 110px;
   display: inline-block;
-  font-size: 7rem;
+  font-size: 6rem;
   background: white;
   cursor: pointer;
   text-align: center;
