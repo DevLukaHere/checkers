@@ -6,43 +6,56 @@ import { activePawn, inactivePawn, movePawn } from '../state/actions';
 import Field from './Field';
 import { fieldType, move } from '../types';
 
-const Board = () => {
-  let {
-    BLANK,
-    CHECKED,
-    BLACK_PAWN,
-    BLACK_PAWN_CHECKED,
-    RED_PAWN,
-    RED_PAWN_CHECKED,
-  } = fieldType;
+import { store } from '../state/store';
 
+const Board = () => {
   const checkers = useSelector((state: any) => state.checkers);
+
   const dispatch = useDispatch();
 
   const handleClick = (row: number, column: number): void => {
-    //Do we have activePawn?
-    if (checkers.activePawn !== null) {
-      if (
-        checkers.activePawn.row === row &&
-        checkers.activePawn.column === column
-      ) {
-        //Clicked the same field
-        dispatch(inactivePawn());
+    //Whose turn
+    if (isCorrectPlayer(row, column)) {
+      //Do we have activePawn?
+      if (checkers.activePawn !== null) {
+        if (
+          checkers.activePawn.row === row &&
+          checkers.activePawn.column === column
+        ) {
+          //Clicked the same field
+          dispatch(inactivePawn());
+        } else {
+          //Is it a correct move?
+          let move = checkers.moves.find(
+            (move: move) => move.to.row === row && move.to.column === column
+          );
+          if (move)
+            //Making move
+            dispatch(movePawn(move));
+          //Changing activePawn
+          else dispatch(activePawn({ row, column }));
+        }
       } else {
-        //Is it a correct move?
-        let move = checkers.moves.find(
-          (move: move) => move.to.row === row && move.to.column === column
-        );
-        if (move)
-          //Making move
-          dispatch(movePawn(move));
-        //Changing activePawn
-        else dispatch(activePawn({ row, column }));
+        //Activating pawn
+        dispatch(activePawn({ row, column }));
       }
-    } else {
-      //Activating pawn
-      dispatch(activePawn({ row, column }));
     }
+  };
+
+  const isCorrectPlayer = (row: number, column: number): boolean => {
+    let { BLACK_PAWN, RED_PAWN } = fieldType;
+
+    let { isBlackTurn } = store.getState().checkers;
+
+    let type = checkers.pattern[row][column];
+
+    if (type !== BLACK_PAWN && type !== RED_PAWN) return true;
+
+    if (type === BLACK_PAWN && isBlackTurn === true) return true;
+
+    if (type === RED_PAWN && isBlackTurn === false) return true;
+
+    return false;
   };
 
   const [board, setBoard] = useState<JSX.Element[] | null>(null);
@@ -52,6 +65,15 @@ const Board = () => {
     column: number,
     type: fieldType
   ): JSX.Element | null => {
+    let {
+      BLANK,
+      CHECKED,
+      BLACK_PAWN,
+      BLACK_PAWN_CHECKED,
+      RED_PAWN,
+      RED_PAWN_CHECKED,
+    } = fieldType;
+
     switch (type) {
       case BLANK:
         return (

@@ -21,7 +21,7 @@ const Field = ({
   color,
   handleClick,
 }: FieldProps) => {
-  const pattern = useSelector((state: any) => state.pattern);
+  const checkers = useSelector((state: any) => state.checkers);
   const [content, setContent] = useState<JSX.Element | null>(null);
 
   const createField = () => {
@@ -40,7 +40,7 @@ const Field = ({
   useEffect(() => {
     createField();
     // eslint-disable-next-line
-  }, [isActive, isEmpty, pattern]);
+  }, [isActive, isEmpty, checkers]);
 
   return <>{content}</>;
 };
