@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { FaChessPawn } from 'react-icons/fa';
 
 export type FieldProps = {
@@ -8,7 +9,7 @@ export type FieldProps = {
   isActive: boolean;
   isPromoted: boolean;
   color: string;
-  setActive: () => void;
+  handleClick: () => void;
 };
 
 const Field = ({
@@ -18,8 +19,9 @@ const Field = ({
   isActive,
   isPromoted,
   color,
-  setActive,
+  handleClick,
 }: FieldProps) => {
+  const pattern = useSelector((state: any) => state.pattern);
   const [content, setContent] = useState<JSX.Element | null>(null);
 
   const createField = () => {
@@ -29,7 +31,7 @@ const Field = ({
     if (isActive) className += ` field--active`;
 
     setContent(
-      <td key={`${row}_${column}`} className={className} onClick={setActive}>
+      <td key={`${row}_${column}`} className={className} onClick={handleClick}>
         {!isEmpty ? <FaChessPawn /> : ' '}
       </td>
     );
@@ -38,7 +40,7 @@ const Field = ({
   useEffect(() => {
     createField();
     // eslint-disable-next-line
-  }, [isActive, isEmpty]);
+  }, [isActive, isEmpty, pattern]);
 
   return <>{content}</>;
 };

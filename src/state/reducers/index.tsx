@@ -1,9 +1,9 @@
-import pattern from './pattern';
+import checkersReducer from './checkersReducer';
 
 import { combineReducers } from 'redux';
 
 const reducers = combineReducers({
-  pattern,
+  checkers: checkersReducer,
 });
 
 export default reducers;

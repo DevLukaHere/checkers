@@ -1,17 +1,10 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { pawnMove } from '../actions';
-import { fieldType } from '../utilities/modifiers';
+import { activePawn, inactivePawn, movePawn } from '../state/actions';
+
 import Field from './Field';
-import {
-  FieldID,
-  activeFields,
-  inactiveFields,
-  Move,
-  getMoves,
-  makeMove,
-} from '../utilities/modifiers';
+import { fieldType, move } from '../types';
 
 const Board = () => {
   let {
@@ -23,99 +16,38 @@ const Board = () => {
     RED_PAWN_CHECKED,
   } = fieldType;
 
-  const pattern = useSelector((state: any) => state.pattern);
+  const checkers = useSelector((state: any) => state.checkers);
   const dispatch = useDispatch();
 
-  const [activeField, setActiveField] = useState<FieldID | null>(null);
-
-  const [currentTurn, setCurrentTurn] = useState<fieldType>(BLACK_PAWN);
-  const [moves, setMoves] = useState<Move[]>([]);
-
-  const changeTurn = (): void =>
-    setCurrentTurn((prevState) =>
-      prevState === BLACK_PAWN ? RED_PAWN : BLACK_PAWN
-    );
-
-  const handleActivation = (row: number, column: number): void => {
-    dispatch(pawnMove());
-
-    // if (activeField) {
-    //   //The same field clicked again
-    //   if (activeField.row === row && activeField.column === column) {
-    //     setActiveField(null);
-    //   } else {
-    //     let clickedField: fieldType = pattern[row][column];
-    //     //The user makes move
-    //     if (clickedField === CHECKED) {
-    //       setPattern((currentPattern) => {
-    //         let newMove = moves.find(
-    //           (move) => move.to.row === row && move.to.column === column
-    //         );
-    //         if (newMove) {
-    //           let newPattern: number[][] = makeMove(currentPattern, newMove);
-    //           return newPattern;
-    //         }
-    //         return currentPattern;
-    //       });
-    //       setActiveField(null);
-    //     } else {
-    //       //The user clicked another field
-    //       setActiveField({ row, column });
-    //     }
-    //   }
-    // } else {
-    //   //Was pawn clicked?
-    //   if (
-    //     pattern[row][column] === BLACK_PAWN ||
-    //     pattern[row][column] === RED_PAWN
-    //   ) {
-    //     setActiveField({ row, column });
-    //   } else {
-    //     console.log('Not pawn clicked!');
-    //   }
-    // }
-  };
-
-  useEffect(() => {
-    //Searching for moves
-    if (activeField) {
-      let newMoves: Move[] = getMoves(
-        pattern,
-        activeField.row,
-        activeField.column
-      );
-
-      if (newMoves.length) setMoves(newMoves);
+  const handleClick = (row: number, column: number): void => {
+    //Do we have activePawn?
+    if (checkers.activePawn !== null) {
+      if (
+        checkers.activePawn.row === row &&
+        checkers.activePawn.column === column
+      ) {
+        //Clicked the same field
+        dispatch(inactivePawn());
+      } else {
+        //Is it a correct move?
+        let move = checkers.moves.find(
+          (move: move) => move.to.row === row && move.to.column === column
+        );
+        if (move)
+          //Making move
+          dispatch(movePawn(move));
+        //Changing activePawn
+        else dispatch(activePawn({ row, column }));
+      }
     } else {
-      setMoves([]);
+      //Activating pawn
+      dispatch(activePawn({ row, column }));
     }
-    // eslint-disable-next-line
-  }, [activeField]);
-
-  useEffect(() => {
-    // //Showing possible moves
-    // if (moves.length) {
-    //   setPattern((currentPattern) => {
-    //     let newPattern: number[][] = inactiveFields(currentPattern);
-    //     newPattern = activeFields(newPattern, moves);
-    //     return newPattern;
-    //   });
-    // } else {
-    //   setPattern((currentPattern) => {
-    //     let newPattern: number[][] = inactiveFields(currentPattern);
-    //     return newPattern;
-    //   });
-    // }
-  }, [moves]);
-
-  useEffect(() => {
-    Print();
-    // eslint-disable-next-line
-  }, [pattern]);
+  };
 
   const [board, setBoard] = useState<JSX.Element[] | null>(null);
 
-  const Transform = (
+  const createField = (
     row: number,
     column: number,
     type: fieldType
@@ -131,7 +63,7 @@ const Board = () => {
             isActive={false}
             isPromoted={false}
             color="blank"
-            setActive={() => handleActivation(row, column)}
+            handleClick={() => handleClick(row, column)}
           />
         );
       case CHECKED:
@@ -144,7 +76,7 @@ const Board = () => {
             isActive={true}
             isPromoted={false}
             color="blank"
-            setActive={() => handleActivation(row, column)}
+            handleClick={() => handleClick(row, column)}
           />
         );
       case BLACK_PAWN:
@@ -157,7 +89,7 @@ const Board = () => {
             isActive={false}
             isPromoted={false}
             color="black"
-            setActive={() => handleActivation(row, column)}
+            handleClick={() => handleClick(row, column)}
           />
         );
       case RED_PAWN:
@@ -170,7 +102,7 @@ const Board = () => {
             isActive={false}
             isPromoted={false}
             color="red"
-            setActive={() => handleActivation(row, column)}
+            handleClick={() => handleClick(row, column)}
           />
         );
       case BLACK_PAWN_CHECKED:
@@ -183,7 +115,7 @@ const Board = () => {
             isActive={true}
             isPromoted={false}
             color="black"
-            setActive={() => handleActivation(row, column)}
+            handleClick={() => handleClick(row, column)}
           />
         );
       case RED_PAWN_CHECKED:
@@ -196,7 +128,7 @@ const Board = () => {
             isActive={true}
             isPromoted={false}
             color="red"
-            setActive={() => handleActivation(row, column)}
+            handleClick={() => handleClick(row, column)}
           />
         );
       default:
@@ -204,13 +136,13 @@ const Board = () => {
     }
   };
 
-  const Print = () => {
+  const print = (pattern: number[][]) => {
     let newBoard: JSX.Element[] = [];
 
     let newRow: ReactNode[] | null = [];
     for (let row = 0; row < pattern.length; row++) {
       for (let column = 0; column < pattern[0].length; column++) {
-        newRow.push(Transform(row, column, pattern[row][column]));
+        newRow.push(createField(row, column, pattern[row][column]));
       }
 
       newBoard[row] = <tr key={row}>{newRow}</tr>;
@@ -219,6 +151,12 @@ const Board = () => {
 
     setBoard(newBoard);
   };
+
+  useEffect(() => {
+    console.log(checkers);
+    print(checkers.pattern);
+    // eslint-disable-next-line
+  }, [checkers]);
 
   return (
     <table>
