@@ -18,7 +18,7 @@ export const getPawnMoves = (pattern: number[][], fieldID: fieldID): move[] => {
   checkMove(pattern, row, -1, column, -1, moves);
   checkMove(pattern, row, -1, column, 1, moves);
 
-  //If yes, we remove standard moves
+  //If capturing, we remove standard moves
   if (includesCapturing(moves)) moves = moves.filter((move) => move.capturing);
 
   return moves;
@@ -157,22 +157,23 @@ const checkMove = (
   }
 };
 
-export const makeMove = (pattern: number[][], move: move): number[][] => {
+export const pawnAction = (
+  pattern: number[][],
+  { to, from, capturing }: move
+): number[][] => {
   let newPattern: number[][] = pattern.map((row) => row.map((field) => field));
 
   //Clearing all checked fields
   newPattern = clearPossibleMoves(newPattern);
 
   //Moving pawn
-  newPattern[move.to.row][move.to.column] =
-    newPattern[move.from.row][move.from.column];
+  newPattern[to.row][to.column] = newPattern[from.row][from.column];
 
   //Deleting pawn from starting position
-  newPattern[move.from.row][move.from.column] = BLANK;
+  newPattern[from.row][from.column] = BLANK;
 
   //Deleting captured pawn
-  if (move.capturing)
-    newPattern[move.capturing.row][move.capturing.column] = BLANK;
+  if (capturing) newPattern[capturing.row][capturing.column] = BLANK;
 
   return newPattern;
 };
@@ -202,7 +203,6 @@ export const checkIfCapturingExists = (
         getPawnMoves(pattern, { row, column }).map((move) => moves.push(move));
     }
   }
-  console.log(moves, pattern);
   if (includesCapturing(moves)) capturingExists = true;
 
   return capturingExists;

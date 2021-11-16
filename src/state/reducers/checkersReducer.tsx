@@ -5,7 +5,7 @@ import {
   getPawnMoves,
   showPossibleMoves,
   clearPossibleMoves,
-  makeMove,
+  pawnAction,
   checkIfCapturingExists,
 } from '../../utilities/patternModifiers';
 
@@ -15,6 +15,7 @@ type CheckersProps = {
   moves: move[];
   pattern: number[][];
   isCapturingMove: boolean;
+  multiCapturing: move[];
 };
 
 const initialPattern: number[][] = [
@@ -22,10 +23,10 @@ const initialPattern: number[][] = [
   [0, 2, 0, 2, 0, 2, 0, 2],
   [2, 0, 2, 0, 2, 0, 2, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 4, 0, 4, 0, 4, 0, 4],
+  [0, 0, 0, 0, 4, 0, 0, 0],
+  [0, 4, 0, 4, 0, 0, 0, 4],
   [4, 0, 4, 0, 4, 0, 4, 0],
-  [0, 4, 0, 4, 0, 4, 0, 4],
+  [0, 4, 0, 4, 0, 4, 0, 0],
 ];
 
 const initialState: CheckersProps = {
@@ -34,6 +35,7 @@ const initialState: CheckersProps = {
   moves: [],
   pattern: initialPattern,
   isCapturingMove: false,
+  multiCapturing: [],
 };
 
 const checkersReducer = (state = initialState, action: AnyAction) => {
@@ -58,9 +60,17 @@ const checkersReducer = (state = initialState, action: AnyAction) => {
         isBlackTurn: !state.isBlackTurn,
         activePawn: null,
         moves: [],
-        pattern: makeMove(state.pattern, action.payload),
+        pattern: pawnAction(state.pattern, action.payload),
       };
-    case 'CHECK_CAPTURING':
+    case 'BEAT_PAWN':
+      return {
+        ...state,
+        isBlackTurn: !state.isBlackTurn,
+        activePawn: null,
+        moves: [],
+        pattern: pawnAction(state.pattern, action.payload),
+      };
+    case 'CHECK_POSSIBLE_CAPTURINGS':
       return {
         ...state,
         isCapturingMove: checkIfCapturingExists(
@@ -68,7 +78,21 @@ const checkersReducer = (state = initialState, action: AnyAction) => {
           state.isBlackTurn
         ),
       };
-
+    case 'CHECK_MULTI_CAPTURING':
+      let { row, column } = action.payload;
+      return {
+        ...state,
+        multiCapturing: getPawnMoves(state.pattern, {
+          row,
+          column,
+        }).filter((move) => move.capturing),
+      };
+    case 'MAKE_MULTI_CAPTURING':
+      return {
+        ...state,
+        isBlackTurn: !state.isBlackTurn,
+        multiCapturing: [],
+      };
     default:
       return state;
   }

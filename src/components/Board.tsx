@@ -5,7 +5,10 @@ import {
   activePawn,
   inactivePawn,
   movePawn,
-  checkCapturing,
+  beatPawn,
+  checkPossibleCapturings,
+  checkMultiCapturing,
+  makeMultiCapturing,
 } from '../state/actions';
 
 import Field from './Field';
@@ -18,38 +21,56 @@ const Board = () => {
   const dispatch = useDispatch();
 
   const handleClick = (row: number, column: number): void => {
-    //Whose turn
+    //Whose turn?
     if (isCorrectPlayer(row, column)) {
       //Do we have activePawn?
       if (checkers.activePawn !== null) {
+        //Did user click the same field again?
         if (
           checkers.activePawn.row === row &&
           checkers.activePawn.column === column
         ) {
-          //Clicked the same field
           dispatch(inactivePawn());
         } else {
-          //Is it a correct move?
+          //Does the move exist in current moves?
           let move = checkers.moves.find(
-            (move: move) => move.to.row === row && move.to.column === column
+            ({ to }: move) => to.row === row && to.column === column
           );
           if (move) {
-            //Capturing is obligatory
-            if (!move.capturing && checkers.isCapturingMove) {
-              alert('PRZYMUS BICIA!');
-              dispatch(inactivePawn());
-            } else {
-              //Making move
-              dispatch(movePawn(move));
-              dispatch(checkCapturing());
-            }
-          }
+            //Is it beating?
+            if (move.capturing) {
+              //Beating
+              dispatch(beatPawn(move));
 
-          //Changing activePawn
-          else dispatch(activePawn({ row, column }));
+              //Is there multi capturing?
+              let { row, column } = move.to;
+              dispatch(checkMultiCapturing({ row, column }));
+              if (checkers.multiCapturing.length) {
+                console.log('MULTIII');
+                //dispatch(makeMultiCapturing({ row, column }));
+              } else {
+                //Checking if next player has a capturing move
+                dispatch(checkPossibleCapturings());
+              }
+            } else {
+              //Capturing is obligatory
+              if (checkers.isCapturingMove) {
+                alert('You have to beat pawn!');
+                dispatch(inactivePawn());
+              } else {
+                //Making standard move
+                dispatch(movePawn(move));
+                //Checking if next player has a capturing move
+                dispatch(checkPossibleCapturings());
+              }
+            }
+          } else {
+            //Move doesn't exist in the moves => getting new activePawn
+            dispatch(activePawn({ row, column }));
+          }
         }
       } else {
-        //Activating pawn
+        //No activePawn => activating pawn
         dispatch(activePawn({ row, column }));
       }
     }
