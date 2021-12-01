@@ -1,10 +1,16 @@
 import { AnyAction } from 'redux';
+<<<<<<< HEAD
 import { fieldID, move } from '../../utilities/types';
+=======
+import { fieldID, move } from '../../types';
+
+>>>>>>> 4d142766a18fd913a9a2ae7d906c6f0bf31537c1
 import {
   getPawnMoves,
   showPossibleMoves,
   clearPossibleMoves,
-  makeMove,
+  pawnAction,
+  checkIfCapturingExists,
 } from '../../utilities/patternModifiers';
 
 type CheckersProps = {
@@ -12,6 +18,8 @@ type CheckersProps = {
   activePawn: fieldID | null;
   moves: move[];
   pattern: number[][];
+  isCapturingMove: boolean;
+  multiCapturing: move[];
 };
 
 const initialPattern: number[][] = [
@@ -19,10 +27,10 @@ const initialPattern: number[][] = [
   [0, 2, 0, 2, 0, 2, 0, 2],
   [2, 0, 2, 0, 2, 0, 2, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 4, 0, 4, 0, 4, 0, 4],
+  [0, 0, 0, 0, 4, 0, 0, 0],
+  [0, 4, 0, 4, 0, 0, 0, 4],
   [4, 0, 4, 0, 4, 0, 4, 0],
-  [0, 4, 0, 4, 0, 4, 0, 4],
+  [0, 4, 0, 4, 0, 4, 0, 0],
 ];
 
 const initialState: CheckersProps = {
@@ -30,6 +38,8 @@ const initialState: CheckersProps = {
   activePawn: null,
   moves: [],
   pattern: initialPattern,
+  isCapturingMove: false,
+  multiCapturing: [],
 };
 
 const checkersReducer = (state = initialState, action: AnyAction) => {
@@ -54,9 +64,39 @@ const checkersReducer = (state = initialState, action: AnyAction) => {
         isBlackTurn: !state.isBlackTurn,
         activePawn: null,
         moves: [],
-        pattern: makeMove(state.pattern, action.payload),
+        pattern: pawnAction(state.pattern, action.payload),
       };
-
+    case 'BEAT_PAWN':
+      return {
+        ...state,
+        isBlackTurn: !state.isBlackTurn,
+        activePawn: null,
+        moves: [],
+        pattern: pawnAction(state.pattern, action.payload),
+      };
+    case 'CHECK_POSSIBLE_CAPTURINGS':
+      return {
+        ...state,
+        isCapturingMove: checkIfCapturingExists(
+          state.pattern,
+          state.isBlackTurn
+        ),
+      };
+    case 'CHECK_MULTI_CAPTURING':
+      let { row, column } = action.payload;
+      return {
+        ...state,
+        multiCapturing: getPawnMoves(state.pattern, {
+          row,
+          column,
+        }).filter((move) => move.capturing),
+      };
+    case 'MAKE_MULTI_CAPTURING':
+      return {
+        ...state,
+        isBlackTurn: !state.isBlackTurn,
+        multiCapturing: [],
+      };
     default:
       return state;
   }

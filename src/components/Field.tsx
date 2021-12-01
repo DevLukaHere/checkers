@@ -32,6 +32,7 @@ const Field = ({
 
     setContent(
       <td key={`${row}_${column}`} className={className} onClick={handleClick}>
+        {<p className="fieldID">{`${row}_${column}`}</p>}
         {!isEmpty ? <FaChessPawn /> : ' '}
       </td>
     );
