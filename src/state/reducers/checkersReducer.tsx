@@ -1,5 +1,5 @@
 import { AnyAction } from 'redux';
-import { fieldID, move } from '../../types';
+import { fieldID, move } from '../../utilities/types';
 import {
   getPawnMoves,
   showPossibleMoves,

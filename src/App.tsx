@@ -1,10 +1,10 @@
-import Board from './components/Board';
+import Engine from './components/Engine';
 
 function App() {
   return (
     <div className="App">
       <main className="main">
-        <Board />
+        <Engine />
       </main>
     </div>
   );

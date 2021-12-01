@@ -1,4 +1,4 @@
-import { fieldID, move } from '../../types';
+import { fieldID, move } from '../../utilities/types';
 
 export const activePawn = (fieldID: fieldID) => {
   return { type: 'ACTIVE_PAWN', payload: fieldID };

@@ -1,62 +1,15 @@
 import { useState, useEffect, ReactNode } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-
-import { activePawn, inactivePawn, movePawn } from '../state/actions';
+import { useSelector } from 'react-redux';
 
 import Field from './Field';
-import { fieldType, move } from '../types';
+import { fieldType, fieldID } from '../utilities/types';
 
-import { store } from '../state/store';
+interface BoardProps {
+  callback: (fieldID: fieldID) => void;
+}
 
-const Board = () => {
-  const checkers = useSelector((state: any) => state.checkers);
-
-  const dispatch = useDispatch();
-
-  const handleClick = (row: number, column: number): void => {
-    //Whose turn
-    if (isCorrectPlayer(row, column)) {
-      //Do we have activePawn?
-      if (checkers.activePawn !== null) {
-        if (
-          checkers.activePawn.row === row &&
-          checkers.activePawn.column === column
-        ) {
-          //Clicked the same field
-          dispatch(inactivePawn());
-        } else {
-          //Is it a correct move?
-          let move = checkers.moves.find(
-            (move: move) => move.to.row === row && move.to.column === column
-          );
-          if (move)
-            //Making move
-            dispatch(movePawn(move));
-          //Changing activePawn
-          else dispatch(activePawn({ row, column }));
-        }
-      } else {
-        //Activating pawn
-        dispatch(activePawn({ row, column }));
-      }
-    }
-  };
-
-  const isCorrectPlayer = (row: number, column: number): boolean => {
-    let { BLACK_PAWN, RED_PAWN } = fieldType;
-
-    let { isBlackTurn } = store.getState().checkers;
-
-    let type = checkers.pattern[row][column];
-
-    if (type !== BLACK_PAWN && type !== RED_PAWN) return true;
-
-    if (type === BLACK_PAWN && isBlackTurn === true) return true;
-
-    if (type === RED_PAWN && isBlackTurn === false) return true;
-
-    return false;
-  };
+const Board = ({ callback }: BoardProps) => {
+  const pattern = useSelector((state: any) => state.checkers.pattern);
 
   const [board, setBoard] = useState<JSX.Element[] | null>(null);
 
@@ -85,7 +38,7 @@ const Board = () => {
             isActive={false}
             isPromoted={false}
             color="blank"
-            handleClick={() => handleClick(row, column)}
+            handleClick={() => callback({ row, column })}
           />
         );
       case CHECKED:
@@ -98,7 +51,7 @@ const Board = () => {
             isActive={true}
             isPromoted={false}
             color="blank"
-            handleClick={() => handleClick(row, column)}
+            handleClick={() => callback({ row, column })}
           />
         );
       case BLACK_PAWN:
@@ -111,7 +64,7 @@ const Board = () => {
             isActive={false}
             isPromoted={false}
             color="black"
-            handleClick={() => handleClick(row, column)}
+            handleClick={() => callback({ row, column })}
           />
         );
       case RED_PAWN:
@@ -124,7 +77,7 @@ const Board = () => {
             isActive={false}
             isPromoted={false}
             color="red"
-            handleClick={() => handleClick(row, column)}
+            handleClick={() => callback({ row, column })}
           />
         );
       case BLACK_PAWN_CHECKED:
@@ -137,7 +90,7 @@ const Board = () => {
             isActive={true}
             isPromoted={false}
             color="black"
-            handleClick={() => handleClick(row, column)}
+            handleClick={() => callback({ row, column })}
           />
         );
       case RED_PAWN_CHECKED:
@@ -150,7 +103,7 @@ const Board = () => {
             isActive={true}
             isPromoted={false}
             color="red"
-            handleClick={() => handleClick(row, column)}
+            handleClick={() => callback({ row, column })}
           />
         );
       default:
@@ -175,10 +128,10 @@ const Board = () => {
   };
 
   useEffect(() => {
-    console.log(checkers);
-    print(checkers.pattern);
+    console.log(pattern);
+    print(pattern);
     // eslint-disable-next-line
-  }, [checkers]);
+  }, [pattern]);
 
   return (
     <table>

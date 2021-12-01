@@ -1,4 +1,4 @@
-import { fieldType, fieldID, move } from '../types';
+import { fieldType, fieldID, move } from './types';
 
 let {
   BLANK,
@@ -44,16 +44,16 @@ export const showPossibleMoves = (
 
   if (moves.length) {
     //Activating fields
-    let fields: fieldID[] = [];
+    let checkedFields: fieldID[] = [];
 
     let { row, column } = moves[0].from;
-    fields.push({ row, column });
+    checkedFields.push({ row, column });
     moves.forEach((move) => {
       let { row, column } = move.to;
-      fields.push({ row, column });
+      checkedFields.push({ row, column });
     });
 
-    fields.forEach((field) => {
+    checkedFields.forEach((field) => {
       newPattern[field.row][field.column] = toggleFieldActive(
         newPattern[field.row][field.column]
       );
@@ -166,22 +166,23 @@ const checkMove = (
   }
 };
 
-export const makeMove = (pattern: number[][], move: move): number[][] => {
+export const makeMove = (
+  pattern: number[][],
+  { to, from, capturing }: move
+): number[][] => {
   let newPattern: number[][] = pattern.map((row) => row.map((field) => field));
 
   //Clearing all checked fields
   newPattern = clearPossibleMoves(newPattern);
 
   //Moving pawn
-  newPattern[move.to.row][move.to.column] =
-    newPattern[move.from.row][move.from.column];
+  newPattern[to.row][to.column] = newPattern[from.row][from.column];
 
   //Deleting pawn from starting position
-  newPattern[move.from.row][move.from.column] = BLANK;
+  newPattern[from.row][from.column] = BLANK;
 
   //Deleting captured pawn
-  if (move.capturing)
-    newPattern[move.capturing.row][move.capturing.column] = BLANK;
+  if (capturing) newPattern[capturing.row][capturing.column] = BLANK;
 
   return newPattern;
 };
