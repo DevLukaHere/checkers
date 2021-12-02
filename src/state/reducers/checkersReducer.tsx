@@ -1,25 +1,21 @@
 import { AnyAction } from 'redux';
-<<<<<<< HEAD
 import { fieldID, move } from '../../utilities/types';
-=======
-import { fieldID, move } from '../../types';
-
->>>>>>> 4d142766a18fd913a9a2ae7d906c6f0bf31537c1
+import { isBeatingGloballyPossible } from '../../utilities/patternModifiers';
 import {
   getPawnMoves,
   showPossibleMoves,
   clearPossibleMoves,
-  pawnAction,
-  checkIfCapturingExists,
+  makeMove,
+  makeBeat,
 } from '../../utilities/patternModifiers';
 
 type CheckersProps = {
   isBlackTurn: boolean;
   activePawn: fieldID | null;
   moves: move[];
+  isBeatingPossible: boolean;
   pattern: number[][];
-  isCapturingMove: boolean;
-  multiCapturing: move[];
+  multiBeating: fieldID | null;
 };
 
 const initialPattern: number[][] = [
@@ -27,8 +23,8 @@ const initialPattern: number[][] = [
   [0, 2, 0, 2, 0, 2, 0, 2],
   [2, 0, 2, 0, 2, 0, 2, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 4, 0, 0, 0],
-  [0, 4, 0, 4, 0, 0, 0, 4],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 4, 0, 4, 0, 4, 0, 4],
   [4, 0, 4, 0, 4, 0, 4, 0],
   [0, 4, 0, 4, 0, 4, 0, 0],
 ];
@@ -37,9 +33,9 @@ const initialState: CheckersProps = {
   isBlackTurn: true,
   activePawn: null,
   moves: [],
+  isBeatingPossible: false,
   pattern: initialPattern,
-  isCapturingMove: false,
-  multiCapturing: [],
+  multiBeating: null,
 };
 
 const checkersReducer = (state = initialState, action: AnyAction) => {
@@ -61,41 +57,30 @@ const checkersReducer = (state = initialState, action: AnyAction) => {
     case 'MOVE_PAWN':
       return {
         ...state,
-        isBlackTurn: !state.isBlackTurn,
         activePawn: null,
         moves: [],
-        pattern: pawnAction(state.pattern, action.payload),
+        pattern: makeMove(state.pattern, action.payload),
       };
     case 'BEAT_PAWN':
       return {
         ...state,
-        isBlackTurn: !state.isBlackTurn,
         activePawn: null,
         moves: [],
-        pattern: pawnAction(state.pattern, action.payload),
+        pattern: makeBeat(state.pattern, action.payload),
       };
-    case 'CHECK_POSSIBLE_CAPTURINGS':
+    case 'TOGGLE_MULTIBEATING':
       return {
         ...state,
-        isCapturingMove: checkIfCapturingExists(
+        multiBeating: action.payload,
+      };
+    case 'CHANGE_PLAYER':
+      return {
+        ...state,
+        isBeatingPossible: isBeatingGloballyPossible(
           state.pattern,
-          state.isBlackTurn
+          state.isBeatingPossible
         ),
-      };
-    case 'CHECK_MULTI_CAPTURING':
-      let { row, column } = action.payload;
-      return {
-        ...state,
-        multiCapturing: getPawnMoves(state.pattern, {
-          row,
-          column,
-        }).filter((move) => move.capturing),
-      };
-    case 'MAKE_MULTI_CAPTURING':
-      return {
-        ...state,
         isBlackTurn: !state.isBlackTurn,
-        multiCapturing: [],
       };
     default:
       return state;

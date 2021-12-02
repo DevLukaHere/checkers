@@ -9,6 +9,7 @@ interface BoardProps {
 }
 
 const Board = ({ callback }: BoardProps) => {
+  const checkers = useSelector((state: any) => state.checkers);
   const pattern = useSelector((state: any) => state.checkers.pattern);
 
   const [board, setBoard] = useState<JSX.Element[] | null>(null);
@@ -128,7 +129,7 @@ const Board = ({ callback }: BoardProps) => {
   };
 
   useEffect(() => {
-    console.log(pattern);
+    console.log(checkers);
     print(pattern);
     // eslint-disable-next-line
   }, [pattern]);

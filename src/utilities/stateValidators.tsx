@@ -98,3 +98,44 @@ export const isCorrectField = ({ row, column }: fieldID): boolean => {
 
   return false;
 };
+
+export const isItBeating = (move: move): boolean => {
+  if (move.capturing) return true;
+
+  console.log('You have to do a beating move!');
+  return false;
+};
+
+export const isMultiBeating = (): boolean => {
+  let currentState = store.getState();
+  let { multiBeating } = currentState.checkers;
+
+  if (multiBeating) return true;
+
+  return false;
+};
+
+export const isBeatingByLastPawn = ({
+  row,
+  column,
+}: fieldID): fieldID | undefined => {
+  let currentState = store.getState();
+  let { multiBeating } = currentState.checkers;
+
+  if (
+    multiBeating &&
+    multiBeating.row === row &&
+    multiBeating.column === column
+  )
+    return multiBeating;
+
+  console.log('You have to beat by last used pawn!');
+  return undefined;
+};
+
+export const isBeatingPossible = () => {
+  let currentState = store.getState();
+  let { isBeatingPossible } = currentState.checkers;
+
+  return isBeatingPossible;
+};

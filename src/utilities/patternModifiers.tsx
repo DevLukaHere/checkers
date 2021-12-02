@@ -9,14 +9,99 @@ let {
   RED_PAWN_CHECKED,
 } = fieldType;
 
+const checkMove = (
+  pattern: number[][],
+  row: number,
+  rowShift: number,
+  column: number,
+  columnShift: number,
+  moves: move[]
+): void => {
+  let fromField: fieldType = pattern[row][column];
+
+  if (isOutOfBoundaries(row + rowShift, column + columnShift)) return;
+  let toField: fieldType = pattern[row + rowShift][column + columnShift];
+
+  //BLACK_PAWN
+  if (fromField === BLACK_PAWN && isFieldFree(toField)) {
+    moves.push({
+      from: { row, column },
+      to: { row: row + rowShift, column: column + columnShift },
+    });
+  }
+
+  //RED_PAWN
+  if (fromField === RED_PAWN && isFieldFree(toField)) {
+    moves.push({
+      from: { row, column },
+      to: { row: row + rowShift, column: column + columnShift },
+    });
+  }
+};
+
+const checkBeat = (
+  pattern: number[][],
+  row: number,
+  rowShift: number,
+  column: number,
+  columnShift: number,
+  moves: move[]
+): void => {
+  let fromField: fieldType = pattern[row][column];
+
+  if (isOutOfBoundaries(row + rowShift, column + columnShift)) return;
+  let capturedField: fieldType = pattern[row + rowShift][column + columnShift];
+
+  if (isOutOfBoundaries(row + 2 * rowShift, column + 2 * columnShift)) return;
+  let toField: fieldType =
+    pattern[row + 2 * rowShift][column + 2 * columnShift];
+
+  //BLACK_PAWN
+  if (
+    fromField === BLACK_PAWN &&
+    capturedField === RED_PAWN &&
+    isFieldFree(toField)
+  ) {
+    moves.push({
+      from: { row, column },
+      to: { row: row + 2 * rowShift, column: column + 2 * columnShift },
+      capturing: { row: row + rowShift, column: column + columnShift },
+    });
+  }
+
+  //RED_PAWN
+  if (
+    fromField === RED_PAWN &&
+    capturedField === BLACK_PAWN &&
+    isFieldFree(toField)
+  ) {
+    moves.push({
+      from: { row, column },
+      to: { row: row + 2 * rowShift, column: column + 2 * columnShift },
+      capturing: { row: row + rowShift, column: column + columnShift },
+    });
+  }
+};
+
 export const getPawnMoves = (pattern: number[][], fieldID: fieldID): move[] => {
   let { row, column } = fieldID;
+  let type = pattern[row][column];
   let moves: move[] = [];
 
-  checkMove(pattern, row, 1, column, -1, moves);
-  checkMove(pattern, row, 1, column, 1, moves);
-  checkMove(pattern, row, -1, column, -1, moves);
-  checkMove(pattern, row, -1, column, 1, moves);
+  if (type === BLACK_PAWN) {
+    checkMove(pattern, row, 1, column, -1, moves);
+    checkMove(pattern, row, 1, column, 1, moves);
+  }
+  if (type === RED_PAWN) {
+    checkMove(pattern, row, -1, column, -1, moves);
+    checkMove(pattern, row, -1, column, 1, moves);
+  }
+
+  //Beating
+  checkBeat(pattern, row, 1, column, -1, moves);
+  checkBeat(pattern, row, 1, column, 1, moves);
+  checkBeat(pattern, row, -1, column, -1, moves);
+  checkBeat(pattern, row, -1, column, 1, moves);
 
   //If capturing, we remove standard moves
   if (includesCapturing(moves)) moves = moves.filter((move) => move.capturing);
@@ -90,82 +175,42 @@ export const clearPossibleMoves = (pattern: number[][]): number[][] => {
   return newPattern;
 };
 
-const isOutOfBundaries = (shiftedRow: number, shiftedColumn: number) => {
+const isOutOfBoundaries = (shiftedRow: number, shiftedColumn: number) => {
   if (shiftedRow < 0 || shiftedRow > 7) return true;
   if (shiftedColumn < 0 || shiftedColumn > 7) return true;
 
   return false;
 };
 
-const checkMove = (
-  pattern: number[][],
-  row: number,
-  rowShift: number,
-  column: number,
-  columnShift: number,
-  moves: move[]
-): void => {
-  let currentField: fieldType = pattern[row][column];
-
-  if (isOutOfBundaries(row + rowShift, column + columnShift)) return;
-  let firstField: fieldType = pattern[row + rowShift][column + columnShift];
-
-  //Standard BLACK_PAWN move
-  if (currentField === BLACK_PAWN && isFieldFree(firstField) && rowShift > 0) {
-    moves.push({
-      from: { row, column },
-      to: { row: row + rowShift, column: column + columnShift },
-    });
-  }
-
-  //Standard RED_PAWN move
-  if (currentField === RED_PAWN && isFieldFree(firstField) && rowShift < 0) {
-    moves.push({
-      from: { row, column },
-      to: { row: row + rowShift, column: column + columnShift },
-    });
-  }
-
-  if (isOutOfBundaries(row + 2 * rowShift, column + 2 * columnShift)) return;
-  let secondField: fieldType =
-    pattern[row + 2 * rowShift][column + 2 * columnShift];
-
-  //Capturing by BLACK_PAWN
-  if (
-    currentField === BLACK_PAWN &&
-    firstField === RED_PAWN &&
-    isFieldFree(secondField)
-  ) {
-    moves.push({
-      from: { row, column },
-      to: { row: row + 2 * rowShift, column: column + 2 * columnShift },
-      capturing: { row: row + rowShift, column: column + columnShift },
-    });
-  }
-
-  //Capturing by RED_PAWN
-  if (
-    currentField === RED_PAWN &&
-    firstField === BLACK_PAWN &&
-    isFieldFree(secondField)
-  ) {
-    moves.push({
-      from: { row, column },
-      to: { row: row + 2 * rowShift, column: column + 2 * columnShift },
-      capturing: { row: row + rowShift, column: column + columnShift },
-    });
-  }
+const isFieldFree = (field: fieldType): boolean => {
+  return field === BLANK || field === CHECKED ? true : false;
 };
 
-<<<<<<< HEAD
 export const makeMove = (
-=======
-export const pawnAction = (
->>>>>>> 4d142766a18fd913a9a2ae7d906c6f0bf31537c1
+  pattern: number[][],
+  { to, from }: move
+): number[][] => {
+  let newPattern: number[][] = pattern.map((row) => row.map((field) => field));
+
+  //Clearing all checked fields
+  newPattern = clearPossibleMoves(newPattern);
+
+  //Moving pawn
+  newPattern[to.row][to.column] = newPattern[from.row][from.column];
+
+  //Deleting pawn from start position
+  newPattern[from.row][from.column] = BLANK;
+
+  return newPattern;
+};
+
+export const makeBeat = (
   pattern: number[][],
   { to, from, capturing }: move
 ): number[][] => {
   let newPattern: number[][] = pattern.map((row) => row.map((field) => field));
+
+  console.log({ to, from, capturing });
 
   //Clearing all checked fields
   newPattern = clearPossibleMoves(newPattern);
@@ -182,44 +227,45 @@ export const pawnAction = (
   return newPattern;
 };
 
-const includesCapturing = (moves: move[]): boolean => {
-  let isCapturing = false;
+export const includesCapturing = (moves: move[]): boolean => {
+  let isBeating = false;
   moves.forEach((move) => {
-    if (move.capturing) isCapturing = true;
+    if (move.capturing) isBeating = true;
   });
 
-  return isCapturing;
+  return isBeating;
 };
 
-export const checkIfCapturingExists = (
+export const isBeatingGloballyPossible = (
   pattern: number[][],
   isBlackTurn: boolean
 ): boolean => {
-  let capturingExists = false;
-
-  let moves: move[] = [];
+  let playerFields: fieldID[] = [];
   for (let row = 0; row < pattern.length; row++) {
     for (let column = 0; column < pattern[0].length; column++) {
+      let type = pattern[row][column];
       if (
-        (isBlack(pattern[row][column]) && isBlackTurn) ||
-        (isRed(pattern[row][column]) && !isBlackTurn)
+        (isBlackTurn && type === BLACK_PAWN) ||
+        (!isBlackTurn && type === RED_PAWN)
       )
-        getPawnMoves(pattern, { row, column }).map((move) => moves.push(move));
+        playerFields.push({ row, column });
     }
   }
-  if (includesCapturing(moves)) capturingExists = true;
 
-  return capturingExists;
-};
+  let allPossibleMoves: move[] = [];
 
-const isFieldFree = (field: fieldType): boolean => {
-  return field === BLANK || field === CHECKED ? true : false;
-};
+  playerFields.forEach((field) => {
+    let fieldMoves = getPawnMoves(pattern, field);
+    fieldMoves.forEach((move) => allPossibleMoves.push(move));
+  });
 
-const isBlack = (field: fieldType): boolean => {
-  return field === BLACK_PAWN || field === BLACK_PAWN_CHECKED ? true : false;
-};
+  let isBeating = false;
+  allPossibleMoves.forEach((move) => {
+    if (move.capturing) {
+      isBeating = true;
+      console.log('Beating: ', move);
+    }
+  });
 
-const isRed = (field: fieldType): boolean => {
-  return field === RED_PAWN || field === RED_PAWN_CHECKED ? true : false;
+  return isBeating;
 };
